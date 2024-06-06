@@ -10,10 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
+#install.packages("visdat")
 library(here)
 library(readxl)
 library(tidyverse)
 library(ggplot2)
+library(visdat)
 ```
 
 ```{r}
@@ -27,10 +29,33 @@ summary(df)
 
 ```{r}
 
-df= df %>% select(barrio,cod_postal,tipo_habitacion,personas,banios,habitaciones,camas,precio_euros,	estancia_min,	puntuacion,	 Internet,	TV,	 Wifi,	Air_conditioning,	Elevator,	Breakfast,	Pets_allowed,	Cable_TV,	Pool,	Patio_or_balcony,	'24-hour_check-in',	Smart_lock
-)%>% filter(is.na(puntuacion)==FALSE,
-            is.na(barrio)==FALSE)
 
+df%>%vis_miss()
+
+df= df %>% select(barrio,
+                  tipo_habitacion,
+                  personas,
+                  banios,
+                  habitaciones,
+                  camas,
+                  precio_euros,	
+                  estancia_min,	
+                  puntuacion,	 
+                  Internet,	
+                  TV,	 
+                  Wifi,	
+                  Air_conditioning,	
+                  Elevator,	
+                  Breakfast,	
+                  Pets_allowed,	
+                  Cable_TV,	
+                  Pool,	
+                  Patio_or_balcony,	
+                  '24-hour_check-in',	
+                  Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
+                                        is.na(barrio)==FALSE)
+
+df%>%vis_miss()
 
 ```
 
@@ -38,16 +63,12 @@ df= df %>% select(barrio,cod_postal,tipo_habitacion,personas,banios,habitaciones
 
 ```{r}
 
-
-
 distritos<-character(length(nrow(df)))
 
 
+#CON AYUDA, primero hay que sacar las observaciones que no tienen el dato del barrio para que funcione el codigo
+  
 
-  #CON AYUDA, primero hay que sacar las observaciones que no tienen el dato del barrio para que funcione el codigo
-  
-distritos <- character(length(df$barrio))
-  
 for (i in seq_along(df$barrio)) {
     if (df$barrio[i] == "Sant Marta") {
       distritos[i] <- "Nou Barris"
@@ -91,11 +112,10 @@ for (i in seq_along(df$barrio)) {
     }
   }
 
-  df$distritos <- distritos
+df$distritos <- distritos
 
-  
 
-df%>% select(barrio,distritos) %>% distinct(barrio,distritos) 
+df%>% filter(is.na(distritos)==TRUE) %>% select(barrio) %>% group_by(barrio) %>% summarise()
 
 
 ```
@@ -103,15 +123,66 @@ df%>% select(barrio,distritos) %>% distinct(barrio,distritos)
 
 
 ```{r}
-df%>% select(barrio,distritos) %>% filter(is.nan(distritos))
+
+summary(df)
+
+df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
+                       banios=as.factor(banios),
+                       camas=as.factor(camas),
+                       habitaciones=as.factor(habitaciones),
+                       distritos=as.factor(distritos),
+                       wifi=as.factor(Wifi),
+                      internet=as.factor(Internet),	
+                      tv=as.factor(TV),	 
+                  Wifi=as.factor(wifi),	
+                  Air_conditioning=as.factor(Air_conditioning),	
+                  Elevator=as.factor(Elevator),	
+                  Breakfast=as.factor(Breakfast),	
+                  Pets_allowed=as.factor(Pets_allowed),	
+                  Cable_TV=as.factor(Cable_TV),	
+                  Pool=as.factor(Pool),	
+                  Patio_or_balcony=as.factor(Patio_or_balcony),	
+                  Check_in_24=as.factor('24-hour_check-in'),	
+                  Smart_lock=as.factor(Smart_lock)
+             )
+
+cor(df_final$puntuacion,df_final$precio_euros)
+
+
 ```
+
+
+```{r}
+p1=ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + theme (axis.title.y =)
+
+p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+
+p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+
+ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + theme (axis.title.y = element_blank())
+
+ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=wifi)) 
+
+ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning))
+
+ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast))
+
+#p3=ggplot(data=df_final) + geom_point(aes(x=cuello,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+#p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+#p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+
+
+
+ggarrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13)
+```
+
 
 
 ```{r}
 library(codpostal)
 library(dplyr)
 
-install.packages("rtools")
+install.packages("codpostal")
 # Obtener los códigos postales de Barcelona
 barcelona_codigos_postales <- codpostal::cp_barcelona()
 
@@ -122,6 +193,7 @@ barcelona_df <- as.data.frame(barcelona_codigos_postales) %>%
 # Ver los primeros registros
 head(barcelona_df)
 ```
+
 
 
 ```{r}
