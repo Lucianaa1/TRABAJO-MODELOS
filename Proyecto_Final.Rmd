@@ -17,7 +17,7 @@ library(ggplot2)
 ```
 
 ```{r}
-df = read_excel(here("Trabajo Final","airbnb_barcelona_v2.xlsx"))
+df = read_excel(here("airbnb_barcelona_v2.xlsx"))
 
 head(df)
 summary(df)
