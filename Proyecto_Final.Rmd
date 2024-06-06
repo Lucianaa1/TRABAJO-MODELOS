@@ -8,7 +8,6 @@ date: "2024-05-23"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
 #install.packages("visdat")
 library(here)
@@ -70,7 +69,15 @@ distritos<-character(length(nrow(df)))
   
 
 for (i in seq_along(df$barrio)) {
-    if (df$barrio[i] == "Sant Marta") {
+    if (df$barrio[i] == "Sant Marta"|| 
+               df$barrio[i] == "La Guineueta - Canyelles"|| 
+               df$barrio[i] == "La Prosperitat"|| 
+               df$barrio[i] == "Nou Barris"|| 
+               df$barrio[i] == "Porta"|| 
+               df$barrio[i] == "Trinitat Nova"|| 
+               df$barrio[i] == "Turo de la Peira - Can Peguera"|| 
+               df$barrio[i] == "Verdum - Los Roquetes"|| 
+               df$barrio[i] == "Vilapicina i la Torre Llobeta") {
       distritos[i] <- "Nou Barris"
     } else if (df$barrio[i]=='La Sagrada Familia' || 
                df$barrio[i] == "Eixample" || 
@@ -84,18 +91,31 @@ for (i in seq_along(df$barrio)) {
                df$barrio[i] == "Camp d'en Grassot i Gracia Nova" || 
                df$barrio[i] == "Gracia" || 
                df$barrio[i] == "El Coll" || 
-               df$barrio[i] == "La salut" || 
+               df$barrio[i] == "La Salut" || 
                df$barrio[i] == "Vallcarca i els Penitents") {
       distritos[i] <- "Gracia"
-    } else if (df$barrio[i] == "Horta-Guinarda") {
+    } else if (df$barrio[i] == "Horta-Guinarda" ||
+               df$barrio[i] == "Can Baro" ||
+               df$barrio[i] == "Carmel" ||
+               df$barrio[i] == "El Baix Guinardo"||
+               df$barrio[i] == "Guinarda" ||
+               df$barrio[i] == "Horta"||
+               df$barrio[i] == "La Font d'en Fargues"||
+               df$barrio[i] == "La Teixonera"||
+               df$barrio[i] == "La Vall d'Hebron"||
+               df$barrio[i] == "Montbau"||
+               df$barrio[i] == "Sant Geni­s dels Agudells") {
       distritos[i] <- "Horta"
-    } else if (df$barrio[i] == "Les Corts") {
+    } else if (df$barrio[i] == "Les Corts"|| 
+               df$barrio[i] == "La Maternitat i Sant Ramon"|| 
+               df$barrio[i] == "Pedralbes") {
       distritos[i] <- "Les Corts"
     } else if (df$barrio[i] == "El Gotic" || 
                df$barrio[i] == "La Barceloneta" || 
                df$barrio[i] == "Ciutat Vella" || 
                df$barrio[i] == "El Raval" || 
-               df$barrio[i] == "Sant Pere/Santa Caterina") {
+               df$barrio[i] == "Sant Pere/Santa Caterina" || 
+               df$barrio[i] == "El Born") {
       distritos[i] <- "Ciutat Vella"
     } else if (df$barrio[i] == "El Poble-sec" || 
                df$barrio[i] == "Sants-Montjuic") {
@@ -104,14 +124,31 @@ for (i in seq_along(df$barrio)) {
                df$barrio[i] == "El Besos i el Maresme" || 
                df$barrio[i] == "El Camp de l'Arpa del Clot"||
                df$barrio[i] == "El Poblenou"||
-               df$barrio[i] == "La Vila Olimpica"
+               df$barrio[i] == "La Vila Olimpica"||
+               df$barrio[i] == "Diagonal Mar - La Mar Bella"||
+               df$barrio[i] == "Glaries - El Parc"||
+               df$barrio[i] == "La Verneda i La Pau"||
+               df$barrio[i] == "Provencals del Poblenou"||
+               df$barrio[i] == "Sant Marta­ de Provencals"
                ) {
       distritos[i] <- "Sant Martí"
-    } else if (df$barrio[i] == "Sant Gervasi - Galvany") {
+    } else if (df$barrio[i] == "Sant Gervasi - Galvany"||
+               df$barrio[i] == "El Putget i Farro"||
+               df$barrio[i] == "Les Tres Torres"||
+               df$barrio[i] == "Sant Gervasi - la Bonanova"||
+               df$barrio[i] == "Sarria"||
+               df$barrio[i] == "Sarria-Sant Gervasi") {
       distritos[i] <- "Sarriá"
-    }
+    } else if (df$barrio[i] == "El Bon Pastor" ||
+               df$barrio[i] == "El Congres i els Indians"||
+               df$barrio[i] == "La Sagrera"||
+               df$barrio[i] == "La Trinitat Vella"||
+               df$barrio[i] == "Navas"||
+               df$barrio[i] == "Sant Andreu"||
+               df$barrio[i] == "Sant Andreu de Palomar") {
+      distritos[i] <- "Sant Andreau"
   }
-
+}
 df$distritos <- distritos
 
 
