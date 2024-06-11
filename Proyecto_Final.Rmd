@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Trabajo Final"
 output: pdf_document
 date: "2024-05-23"
 ---
@@ -10,12 +10,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-#install.packages("visdat")
+#install.packages("codpostal")
 library(here)
 library(readxl)
 library(tidyverse)
 library(ggplot2)
 library(visdat)
+library(patchwork)
 ```
 
 ```{r}
@@ -41,7 +42,7 @@ df= df %>% select(barrio,
                   precio_euros,	
                   estancia_min,	
                   puntuacion,	 
-                  Internet,	
+                ##Internet,	
                   TV,	 
                   Wifi,	
                   Air_conditioning,	
@@ -51,11 +52,12 @@ df= df %>% select(barrio,
                   Cable_TV,	
                   Pool,	
                   Patio_or_balcony,	
-                  '24-hour_check-in',	
+                  Check_in_,	
                   Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
                                         is.na(barrio)==FALSE)
 
 df%>%vis_miss()
+#df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
 
 ```
 
@@ -68,9 +70,16 @@ distritos<-character(length(nrow(df)))
 
 #CON AYUDA, primero hay que sacar las observaciones que no tienen el dato del barrio para que funcione el codigo
   
-
 for (i in seq_along(df$barrio)) {
-    if (df$barrio[i] == "Sant Marta") {
+    if (df$barrio[i] == "Sant Marta"|| 
+               df$barrio[i] == "La Guineueta - Canyelles"|| 
+               df$barrio[i] == "La Prosperitat"|| 
+               df$barrio[i] == "Nou Barris"|| 
+               df$barrio[i] == "Porta"|| 
+               df$barrio[i] == "Trinitat Nova"|| 
+               df$barrio[i] == "Turo de la Peira - Can Peguera"|| 
+               df$barrio[i] == "Verdum - Los Roquetes"|| 
+               df$barrio[i] == "Vilapicina i la Torre Llobeta") {
       distritos[i] <- "Nou Barris"
     } else if (df$barrio[i]=='La Sagrada Familia' || 
                df$barrio[i] == "Eixample" || 
@@ -84,18 +93,31 @@ for (i in seq_along(df$barrio)) {
                df$barrio[i] == "Camp d'en Grassot i Gracia Nova" || 
                df$barrio[i] == "Gracia" || 
                df$barrio[i] == "El Coll" || 
-               df$barrio[i] == "La salut" || 
+               df$barrio[i] == "La Salut" || 
                df$barrio[i] == "Vallcarca i els Penitents") {
       distritos[i] <- "Gracia"
-    } else if (df$barrio[i] == "Horta-Guinarda") {
+    } else if (df$barrio[i] == "Horta-Guinarda" ||
+               df$barrio[i] == "Can Baro" ||
+               df$barrio[i] == "Carmel" ||
+               df$barrio[i] == "El Baix Guinardo"||
+               df$barrio[i] == "Guinarda" ||
+               df$barrio[i] == "Horta"||
+               df$barrio[i] == "La Font d'en Fargues"||
+               df$barrio[i] == "La Teixonera"||
+               df$barrio[i] == "La Vall d'Hebron"||
+               df$barrio[i] == "Montbau"||
+               df$barrio[i] == "Sant Geni­s dels Agudells") {
       distritos[i] <- "Horta"
-    } else if (df$barrio[i] == "Les Corts") {
+    } else if (df$barrio[i] == "Les Corts"|| 
+               df$barrio[i] == "La Maternitat i Sant Ramon"|| 
+               df$barrio[i] == "Pedralbes") {
       distritos[i] <- "Les Corts"
     } else if (df$barrio[i] == "El Gotic" || 
                df$barrio[i] == "La Barceloneta" || 
                df$barrio[i] == "Ciutat Vella" || 
                df$barrio[i] == "El Raval" || 
-               df$barrio[i] == "Sant Pere/Santa Caterina") {
+               df$barrio[i] == "Sant Pere/Santa Caterina" || 
+               df$barrio[i] == "El Born") {
       distritos[i] <- "Ciutat Vella"
     } else if (df$barrio[i] == "El Poble-sec" || 
                df$barrio[i] == "Sants-Montjuic") {
@@ -104,18 +126,37 @@ for (i in seq_along(df$barrio)) {
                df$barrio[i] == "El Besos i el Maresme" || 
                df$barrio[i] == "El Camp de l'Arpa del Clot"||
                df$barrio[i] == "El Poblenou"||
-               df$barrio[i] == "La Vila Olimpica"
+               df$barrio[i] == "La Vila Olimpica"||
+               df$barrio[i] == "Diagonal Mar - La Mar Bella"||
+               df$barrio[i] == "Glaries - El Parc"||
+               df$barrio[i] == "La Verneda i La Pau"||
+               df$barrio[i] == "Provencals del Poblenou"||
+               df$barrio[i] == "Sant Marta­ de Provencals"
                ) {
       distritos[i] <- "Sant Martí"
-    } else if (df$barrio[i] == "Sant Gervasi - Galvany") {
+    } else if (df$barrio[i] == "Sant Gervasi - Galvany"||
+               df$barrio[i] == "El Putget i Farro"||
+               df$barrio[i] == "Les Tres Torres"||
+               df$barrio[i] == "Sant Gervasi - la Bonanova"||
+               df$barrio[i] == "Sarria"||
+               df$barrio[i] == "Sarria-Sant Gervasi") {
       distritos[i] <- "Sarriá"
-    }
+    } else if (df$barrio[i] == "El Bon Pastor" ||
+               df$barrio[i] == "El Congres i els Indians"||
+               df$barrio[i] == "La Sagrera"||
+               df$barrio[i] == "La Trinitat Vella"||
+               df$barrio[i] == "Navas"||
+               df$barrio[i] == "Sant Andreu"||
+               df$barrio[i] == "Sant Andreu de Palomar") {
+      distritos[i] <- "Sant Andreau"
   }
-
+}
 df$distritos <- distritos
 
 
-df%>% filter(is.na(distritos)==TRUE) %>% select(barrio) %>% group_by(barrio) %>% summarise()
+
+  
+df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
 
 
 ```
@@ -142,7 +183,7 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                   Cable_TV=as.factor(Cable_TV),	
                   Pool=as.factor(Pool),	
                   Patio_or_balcony=as.factor(Patio_or_balcony),	
-                  Check_in_24=as.factor('24-hour_check-in'),	
+                  Check_in_24=as.factor("24-hour_check-in"),	
                   Smart_lock=as.factor(Smart_lock)
              )
 
@@ -153,27 +194,32 @@ cor(df_final$puntuacion,df_final$precio_euros)
 
 
 ```{r}
-p1=ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + theme (axis.title.y =)
+#ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
-p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+#p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+#p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + theme (axis.title.y = element_blank())
+#ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + xlab("Puntuación")+ ylab('Precio (en Euros)')
 
-ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=wifi)) 
 
-ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning))
 
-ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast))
+p1=ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning)) + theme (axis.title.y = element_blank()) + xlab("Aire Acondicionado")
+p2=ggplot(data=df_final) + geom_boxplot(aes(x=internet,y=precio_euros,fill=internet))  + theme (axis.title.y = element_blank()) + xlab("Internet")
+p3=ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=Wifi)) + theme (axis.title.y = element_blank()) + xlab("WiFi")
+p4=ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast)) + theme (axis.title.y = element_blank()) + xlab("Desayuno")
+p5=ggplot(data=df_final) + geom_boxplot(aes(x=TV,y=precio_euros,fill=TV)) + theme (axis.title.y = element_blank()) + xlab("Televisión")
+p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
+p7=ggplot(data=df_final) + geom_boxplot(aes(x=Pets_allowed,y=precio_euros,fill=Pets_allowed)) + theme (axis.title.y = element_blank()) + xlab("Admite Mascotas")
+
 
 #p3=ggplot(data=df_final) + geom_point(aes(x=cuello,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
+p6
 
-
-ggarrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13)
+p1+p2+p3+p4+p5
 ```
 
 
