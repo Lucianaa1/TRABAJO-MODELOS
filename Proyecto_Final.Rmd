@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Trabajo Final"
 output: pdf_document
 date: "2024-05-23"
 ---
@@ -9,12 +9,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-#install.packages("visdat")
+#install.packages("codpostal")
 library(here)
 library(readxl)
 library(tidyverse)
 library(ggplot2)
 library(visdat)
+library(patchwork)
 ```
 
 ```{r}
@@ -40,7 +41,7 @@ df= df %>% select(barrio,
                   precio_euros,	
                   estancia_min,	
                   puntuacion,	 
-                  Internet,	
+                ##Internet,	
                   TV,	 
                   Wifi,	
                   Air_conditioning,	
@@ -50,11 +51,12 @@ df= df %>% select(barrio,
                   Cable_TV,	
                   Pool,	
                   Patio_or_balcony,	
-                  '24-hour_check-in',	
+                  Check_in_,	
                   Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
                                         is.na(barrio)==FALSE)
 
 df%>%vis_miss()
+#df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
 
 ```
 
@@ -67,7 +69,6 @@ distritos<-character(length(nrow(df)))
 
 #CON AYUDA, primero hay que sacar las observaciones que no tienen el dato del barrio para que funcione el codigo
   
-
 for (i in seq_along(df$barrio)) {
     if (df$barrio[i] == "Sant Marta"|| 
                df$barrio[i] == "La Guineueta - Canyelles"|| 
@@ -152,7 +153,9 @@ for (i in seq_along(df$barrio)) {
 df$distritos <- distritos
 
 
-df%>% filter(is.na(distritos)==TRUE) %>% select(barrio) %>% group_by(barrio) %>% summarise()
+
+  
+df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
 
 
 ```
@@ -179,7 +182,7 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                   Cable_TV=as.factor(Cable_TV),	
                   Pool=as.factor(Pool),	
                   Patio_or_balcony=as.factor(Patio_or_balcony),	
-                  Check_in_24=as.factor('24-hour_check-in'),	
+                  Check_in_24=as.factor("24-hour_check-in"),	
                   Smart_lock=as.factor(Smart_lock)
              )
 
@@ -190,27 +193,32 @@ cor(df_final$puntuacion,df_final$precio_euros)
 
 
 ```{r}
-p1=ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + theme (axis.title.y =)
+#ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
-p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+#p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
+#p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + theme (axis.title.y = element_blank())
+#ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + xlab("Puntuación")+ ylab('Precio (en Euros)')
 
-ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=wifi)) 
 
-ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning))
 
-ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast))
+p1=ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning)) + theme (axis.title.y = element_blank()) + xlab("Aire Acondicionado")
+p2=ggplot(data=df_final) + geom_boxplot(aes(x=internet,y=precio_euros,fill=internet))  + theme (axis.title.y = element_blank()) + xlab("Internet")
+p3=ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=Wifi)) + theme (axis.title.y = element_blank()) + xlab("WiFi")
+p4=ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast)) + theme (axis.title.y = element_blank()) + xlab("Desayuno")
+p5=ggplot(data=df_final) + geom_boxplot(aes(x=TV,y=precio_euros,fill=TV)) + theme (axis.title.y = element_blank()) + xlab("Televisión")
+p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
+p7=ggplot(data=df_final) + geom_boxplot(aes(x=Pets_allowed,y=precio_euros,fill=Pets_allowed)) + theme (axis.title.y = element_blank()) + xlab("Admite Mascotas")
+
 
 #p3=ggplot(data=df_final) + geom_point(aes(x=cuello,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
+p6
 
-
-ggarrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13)
+p1+p2+p3+p4+p5
 ```
 
 
