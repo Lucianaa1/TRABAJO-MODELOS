@@ -9,6 +9,30 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+# Introducción
+
+La motivación inicial de la realización de este proyecto era estimar el precio en euros de diferentes apartamentos en Barcelona basándose en las diferentes características de cada uno de ellos. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de Barcelona. 
+
+La información con la que se contaba era buena pero excesiva, lo que llevó a que algunos datos fueran redundantes, por lo cual una parte importante de este proyecto fue la inicial, donde se realizó una limpieza de datos para así disponer de información que permita realizar una buena estimación e interpretación de los datos. 
+
+Finalmente, el trabajo e interpretación de los datos, tanto sobre como actúan entre si y sus diversos efectos sobre la variable de interés fueron los que guiaron y generaron el interés en este proyecto provocando que el paso a paso sea tan importante como el resultado final.  
+
+  
+Como se mencionó anteriormente, se disponía de la información de 16.761 apartamentos de Barcelona, donde se mencionaban las características que los huéspedes toman en cuenta al momento de elegir su hospedaje y por lo tanto podrían llegar a incidir en su precio, entre estas se destacaba, ubicación, cantidad de camas y baños, cuantas personas se aceptaban, entre otras. 
+
+Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se pasaron a factor algunas de las cuantitativas para su mejor interpretación. 
+
+La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
+
+Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más importantes. 
+
+Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
+
+Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
+
+ 
+
+
 ```{r}
 #install.packages("codpostal")
 library(here)
