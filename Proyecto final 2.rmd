@@ -11,28 +11,22 @@ knitr::opts_chunk$set(echo = TRUE)
 <<<<<<< HEAD
 =======
 
-# Introducción
 
-La motivación inicial de la realización de este proyecto era estimar el precio en euros de diferentes apartamentos en Barcelona basándose en las diferentes características de cada uno de ellos. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de Barcelona. 
+#INTRODUCCIÓN: 
+
+ 
+
+Airbnb es una compañía dedicada a la oferta de alojamientos de carácter vacacional en muchos de los países del mundo. Esta funciona a partir de un programa digital donde los anfitriones pueden publicar sus propiedades para que los clientes puedan verlas y elegir el alojamiento que más se adapte a sus necesidades. 
+
+En este proyecto se trabajó con algunas propiedades de Barcelona y la motivación inicial de su realización era estimar el precio en euros de diferentes apartamentos según las características de cada uno. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de dicha ciudad. 
 
 La información con la que se contaba era buena pero excesiva, lo que llevó a que algunos datos fueran redundantes, por lo cual una parte importante de este proyecto fue la inicial, donde se realizó una limpieza de datos para así disponer de información que permita realizar una buena estimación e interpretación de los datos. 
 
 Finalmente, el trabajo e interpretación de los datos, tanto sobre como actúan entre si y sus diversos efectos sobre la variable de interés fueron los que guiaron y generaron el interés en este proyecto provocando que el paso a paso sea tan importante como el resultado final.  
 
   
-Como se mencionó anteriormente, se disponía de la información de 16.761 apartamentos de Barcelona, donde se mencionaban las características que los huéspedes toman en cuenta al momento de elegir su hospedaje y por lo tanto podrían llegar a incidir en su precio, entre estas se destacaba, ubicación, cantidad de camas y baños, cuantas personas se aceptaban, entre otras. 
 
-Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se pasaron a factor algunas de las cuantitativas para su mejor interpretación. 
 
-La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
-
-Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más importantes. 
-
-Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
-
-Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
-
- 
 
 
 >>>>>>> 456744176f16fd45f39a6c92e12a73836eae0b88
@@ -58,6 +52,19 @@ summary(df)
 
 ```{r}
 
+#Los datos: 
+
+#Como se mencionó anteriormente, se disponía de la información de 16.761 apartamentos de Barcelona, donde se nombraban las características que los huéspedes toman en cuenta al momento de elegir su hospedaje y por lo tanto podrían llegar a incidir en su precio, entre estas se destacaba, ubicación, cantidad de camas y baños, cuantas personas se aceptaban, entre otras. 
+
+#Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se pasaron a factor algunas de las cuantitativas para su mejor interpretación. 
+
+#La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
+
+#Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que #se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
+
+#Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
+
+#Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
 
 df%>%vis_miss()
 
@@ -79,7 +86,7 @@ df= df %>% select(barrio,
                   Cable_TV,	
                   Pool,	
                   Patio_or_balcony,	
-                  check_in_24_hs,	
+                  `24-hour_check-in`,	
                   Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
                                         is.na(barrio)==FALSE)
 
@@ -194,16 +201,16 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        habitaciones=as.factor(habitaciones),
                        distritos=as.factor(distritos),
                        wifi=as.factor(Wifi),
-                       TV=as.factor(TV),	 
-                       Wifi=as.factor(wifi),	
-                       Air_conditioning=as.factor(Air_conditioning),	
-                       Elevator=as.factor(Elevator),	
-                       Breakfast=as.factor(Breakfast),	
-                       Pets_allowed=as.factor(Pets_allowed),	
-                       Cable_TV=as.factor(Cable_TV),	
-                       Pool=as.factor(Pool),	
-                       Patio_or_balcony=as.factor(Patio_or_balcony),	
-                       check_in_24_hs=as.factor(check_in_24_hs),	
+                      TV=as.factor(TV),	 
+                  Wifi=as.factor(wifi),	
+                  Air_conditioning=as.factor(Air_conditioning),	
+                  Elevator=as.factor(Elevator),	
+                  Breakfast=as.factor(Breakfast),	
+                  Pets_allowed=as.factor(Pets_allowed),	
+                  Cable_TV=as.factor(Cable_TV),	
+                  Pool=as.factor(Pool),	
+                  Patio_or_balcony=as.factor(Patio_or_balcony),	
+                  check_in_24_hs=as.factor(check_in_24_hs),	
                   Smart_lock=as.factor(Smart_lock)
              )
 
@@ -211,6 +218,9 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
 
 
 ```{r, echo=FALSE,warning=FALSE}
+
+#Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
+
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
 #p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
@@ -240,6 +250,11 @@ p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=dist
 (p1+p3+p4+p5+p7+p8)/p6
 
 p5
+
+De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
+Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
+
+
 ```
 
 
@@ -387,5 +402,3 @@ help(anova)
 summaryHH(modS)
 
 ```
-
-
