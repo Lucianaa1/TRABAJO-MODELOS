@@ -215,6 +215,9 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
 
 
 ```{r, echo=FALSE,warning=FALSE}
+
+#Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
+
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
 #p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
@@ -244,6 +247,11 @@ p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=dist
 (p1+p3+p4+p5+p7+p8)/p6
 
 p5
+
+De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
+Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
+
+
 ```
 
 
