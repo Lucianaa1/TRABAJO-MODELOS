@@ -8,9 +8,8 @@ date: "2024-05-23"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#INTRODUCCIÓN: 
-
  
+# Introducción
 
 Airbnb es una compañía dedicada a la oferta de alojamientos de carácter vacacional en muchos de los países del mundo. Esta funciona a partir de un programa digital donde los anfitriones pueden publicar sus propiedades para que los clientes puedan verlas y elegir el alojamiento que más se adapte a sus necesidades. 
 
@@ -22,7 +21,7 @@ Finalmente, el trabajo e interpretación de los datos, tanto sobre como actúan 
 
   
 
-```{r}
+```{r ,echo=FALSE,warning=FALSE}
 #install.packages("codpostal")
 library(here)
 library(readxl)
@@ -31,6 +30,7 @@ library(ggplot2)
 library(visdat)
 library(patchwork)
 library(car)
+library(qqplotr)
 ```
 
 ```{r}
@@ -75,12 +75,16 @@ df= df %>% select(barrio,
                   Elevator,	
                   Breakfast,	
                   Pets_allowed,	
-                  Cable_TV,	
+                 # Cable_TV,	
                   Pool,	
                   Patio_or_balcony,	
-                  `24-hour_check-in`,	
+                  check_in_24_hs,	
                   Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
-                                        is.na(barrio)==FALSE)
+                                        is.na(barrio)==FALSE,
+                                        is.na(banios)==FALSE,
+                                        is.na(habitaciones)==FALSE,
+                                        is.na(camas)==FALSE
+                                        )
 
 df%>%vis_miss()
 #df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
@@ -199,7 +203,7 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                   Elevator=as.factor(Elevator),	
                   Breakfast=as.factor(Breakfast),	
                   Pets_allowed=as.factor(Pets_allowed),	
-                  Cable_TV=as.factor(Cable_TV),	
+                 # Cable_TV=as.factor(Cable_TV),	
                   Pool=as.factor(Pool),	
                   Patio_or_balcony=as.factor(Patio_or_balcony),	
                   check_in_24_hs=as.factor(check_in_24_hs),	
@@ -251,83 +255,157 @@ p5
 De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
 Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
 
-
-
-```{r, eval=FALSE}
-  
-
 #SELECCIÓN DE VARIABLES
 
 k=ncol(airbnb_barcelona)-1
 modelos_posibles=2**k-1
 
-#hay 16383 modelos posibles, vamos a aplicar los procedimientos de hipotesis para
-#llegar al mejor modelo
+hay 16383 modelos posibles, vamos a aplicar los procedimientos de hipotesis para
+llegar al mejor modelo
 
+```{r }
+  
 # Definimos la primer versión del modelo
 
-mod0 <- lm(precio_euros ~  distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Cable_TV+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock, data=df_final)
+mod0 <- lm(precio_euros ~  distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock, data=df_final)
 
 #para "vichar"
-anova(mod0)
-summary(mod0)
+Anova(mod0)
+#summary(mod0)
 
 ```
 
 
 ## Diagnóstico
 
+## Multicolinealidad
 
-```{r, echo=FALSE}
-#hacer todo de diapo 4 del tercer antes de empezar a corregir
-#1
-
-## PREGUNTARRR
-
- df_final %>% select(Air_conditioning,Pool)
-
-
+```{r}
+library(car)
 vif(mod0)
+
 #si el VIF es alto la variable es comb lineal de las demás, gatos2, ratones tienen VIF altos (>5)
 
-# No olvidemos ralizar la etapa de diagnostico
-datos$s_i <- rstudent(mod0)
-ggplot(datos, aes(x = marca, y = s_i, fill= marca)) +
-  geom_boxplot() +
-  xlab('Marca') + 
-  ylab('residuos studentizados') +
-  theme_bw()
+## VER SCRIPTS DE CLASE
 
-# homoscedasticidad
-library(skedastic)
-breusch_pagan(mod0)
 ```
 
 
-## ATIPICOS
+## Homosedasticidad
+
+```{r}
+
+res_ext<-rstudent(mod0) #residuos
+res_int<-rstandard(mod0) #residuos
+
+
+
+yhat<-fitted(mod0) #ygorro
+#grafico
+
+df_final$predichos <- yhat #agrego los residuos a la tabla
+df_final$residuos <- res_ext #agrego los ygorro a la tabla
+df_final$residuos_int <- res_int #agrego los ygorro a la tabla
+
+ggplot(df_final, aes(x = predichos , y = residuos)) +
+  geom_point() +
+  geom_hline(yintercept = 0)
+
+
+#Test de Bush-Pagan
+#3
+install.packages("skedastic")
+library(skedastic)
+breusch_pagan(mod0)
+
+#hipotesis nula es que todos tienen la misma varianza, es decir, hay homoscedasticidad, la otra hipotesis es que hay al menos uno que tiene una varianza diferente a sigma cuadrado
+#rechazo H0, NO HAY HOMOSEDASTICIDAD, p valor muy chico.
+
+
+#4
+# histogramas
+hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas
+#Q-Q plot
+qqPlot(res)
+plot(density(df_final$residuos))
+
+
+```
+
+
+## Normalidad
+
+```{r}
+
+
+ggplot(data = df_final, aes(sample = residuos_int)) +
+  stat_qq_band(fill = 2) +
+  stat_qq_line(col = 2) +
+  stat_qq_point() +
+  xlab("Cuantiles teoricos")+
+  ylab("Cuantiles empiricos")
+
+#PREGUNTA: ¿Por que no corre? ¿Otras opciones?
+shapiro.test(df_final$residuos_int)
+
+
+```
+
+
+
+```{r, echo=FALSE}
+#PUNTO 6 TALLER
+#distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock
+
+#PREGUNTAR: CONFIRMAR CON EL PROFE SI SIRVE SOLO PARA VARIABLES CUALITATIVAS
+crPlot(mod0,"distritos")
+crPlot(mod0,"tipo_habitacion")
+crPlot(mod0,"habitaciones")
+crPlot(mod0,"estancia_min")
+
+
+```
+
+
+## Atípicos
 
 ```{r, echo=FALSE}
 
-#7
+#si hay observaciones influyentes, en el grafico de leverage no se ve, solo se ve ruido, 
+#pero en el grafico de cook los que están por arriba de la linea roja son influyentes.
+
 # medidas de influencia
 h_i <- influence(mod0)$hat
 D_i <- cooks.distance(mod0)
-df <- data.frame(i = 1:12848,
+df <- data.frame(i = 1:nrow(df_final),
                  h_i = h_i,
                  D_i = D_i)
 
-a = df %>% filter(D_i>4/12848)%>% arrange(desc(D_i)) %>% head(50) %>% pull(i)
+#PREGUNTAR: N TIENE QUE SER EL TAMAÑO DE DF? O ES 50 FIJO?
 
-## SACAR LOS ATIPICOS CON ESTE "-"
-## FILTRAR PRIMERO TODOS LOS N/A EN LA ETAPA INICIAL
+n=nrow(df_final)
+
+ggplot(df, aes(x = i, y = D_i)) +
+  geom_point() +
+  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
+  xlab('') +
+  ylab(expression(D[i])) +
+  geom_abline(slope = 0, intercept = 4/50, col = 2, linetype = 'dashed')
+
+
+
+# SELECCIONAMOS TOP 50 DE ATÍPICOS
 # IR SACANDO DE A POCOS POR SI APARECEN NUEVOS ATIPICOS Y VOLVER A CALCULAR
 
-df_final[-a,]
+a = df %>% filter(D_i>(4/50))%>% arrange(desc(D_i)) %>% head(50) %>% pull(i)
+
+## SACAR LOS ATIPICOS CON ESTE "-"
 
 
+df_final[-a,] ##DATA FRAME FINAL SIN ATIPICOS.
 
 
-
+# DEFINIR SI LO DEJAMOS
 # leverage
 ggplot(df, aes(x = i, y = h_i)) +
   geom_point() +
@@ -336,26 +414,15 @@ ggplot(df, aes(x = i, y = h_i)) +
   ylab(expression(h[i])) +
   geom_abline(slope = 0, intercept = 2*5/50, col = 2, linetype = 'dashed')
 
-# Distancia de Cook
-ggplot(df, aes(x = i, y = D_i)) +
-  geom_point() +
-  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
-  xlab('') +
-  ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/50, col = 2, linetype = 'dashed')
-#si hay observaciones influyentes, en el grafico de leverage no se ve, solo se ve ruido, pero en el grafico de cook los que están por arriba de la linea roja son influyentes.
 
 
-# normalidad
-library(qqplotr)
-ggplot(data = df_final, aes(sample = s_i)) +
-  stat_qq_band(fill = 2) +
-  stat_qq_line(col = 2) +
-  stat_qq_point() +
-  xlab("Cuantiles teoricos")+
-  ylab("Cuantiles empiricos")
+```
 
-shapiro.test(datos$s_i)
+
+
+## Selección del mejor modelo
+
+```{r}
 
 
 coef(mod0)
@@ -387,5 +454,5 @@ summaryHH(modB)
 
 help(anova)
 summaryHH(modS)
-
 ```
+
