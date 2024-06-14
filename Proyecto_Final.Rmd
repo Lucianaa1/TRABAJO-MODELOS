@@ -8,6 +8,28 @@ date: "2024-05-23"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<<<<<<< HEAD
+=======
+
+
+#INTRODUCCIÓN: 
+
+ 
+
+Airbnb es una compañía dedicada a la oferta de alojamientos de carácter vacacional en muchos de los países del mundo. Esta funciona a partir de un programa digital donde los anfitriones pueden publicar sus propiedades para que los clientes puedan verlas y elegir el alojamiento que más se adapte a sus necesidades. 
+
+En este proyecto se trabajó con algunas propiedades de Barcelona y la motivación inicial de su realización era estimar el precio en euros de diferentes apartamentos según las características de cada uno. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de dicha ciudad. 
+
+La información con la que se contaba era buena pero excesiva, lo que llevó a que algunos datos fueran redundantes, por lo cual una parte importante de este proyecto fue la inicial, donde se realizó una limpieza de datos para así disponer de información que permita realizar una buena estimación e interpretación de los datos. 
+
+Finalmente, el trabajo e interpretación de los datos, tanto sobre como actúan entre si y sus diversos efectos sobre la variable de interés fueron los que guiaron y generaron el interés en este proyecto provocando que el paso a paso sea tan importante como el resultado final.  
+
+  
+
+
+
+
+>>>>>>> 456744176f16fd45f39a6c92e12a73836eae0b88
 ```{r}
 #install.packages("codpostal")
 library(here)
@@ -16,6 +38,7 @@ library(tidyverse)
 library(ggplot2)
 library(visdat)
 library(patchwork)
+library(car)
 ```
 
 ```{r}
@@ -29,6 +52,19 @@ summary(df)
 
 ```{r}
 
+#Los datos: 
+
+#Como se mencionó anteriormente, se disponía de la información de 16.761 apartamentos de Barcelona, donde se nombraban las características que los huéspedes toman en cuenta al momento de elegir su hospedaje y por lo tanto podrían llegar a incidir en su precio, entre estas se destacaba, ubicación, cantidad de camas y baños, cuantas personas se aceptaban, entre otras. 
+
+Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se pasaron a factor algunas de las cuantitativas para su mejor interpretación. 
+
+La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
+
+Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más importantes. 
+
+Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
+
+Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
 
 df%>%vis_miss()
 
@@ -41,7 +77,6 @@ df= df %>% select(barrio,
                   precio_euros,	
                   estancia_min,	
                   puntuacion,	 
-                ##Internet,	
                   TV,	 
                   Wifi,	
                   Air_conditioning,	
@@ -51,7 +86,7 @@ df= df %>% select(barrio,
                   Cable_TV,	
                   Pool,	
                   Patio_or_balcony,	
-                  Check_in_,	
+                  check_in_24_hs,	
                   Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
                                         is.na(barrio)==FALSE)
 
@@ -152,12 +187,6 @@ for (i in seq_along(df$barrio)) {
 }
 df$distritos <- distritos
 
-
-
-  
-df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
-
-
 ```
 
 
@@ -172,8 +201,7 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        habitaciones=as.factor(habitaciones),
                        distritos=as.factor(distritos),
                        wifi=as.factor(Wifi),
-                      internet=as.factor(Internet),	
-                      tv=as.factor(TV),	 
+                      TV=as.factor(TV),	 
                   Wifi=as.factor(wifi),	
                   Air_conditioning=as.factor(Air_conditioning),	
                   Elevator=as.factor(Elevator),	
@@ -182,17 +210,17 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                   Cable_TV=as.factor(Cable_TV),	
                   Pool=as.factor(Pool),	
                   Patio_or_balcony=as.factor(Patio_or_balcony),	
-                  Check_in_24=as.factor("24-hour_check-in"),	
+                  check_in_24_hs=as.factor(check_in_24_hs),	
                   Smart_lock=as.factor(Smart_lock)
              )
-
-cor(df_final$puntuacion,df_final$precio_euros)
-
 
 ```
 
 
-```{r}
+```{r, echo=FALSE,warning=FALSE}
+
+#Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
+
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
 #p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
@@ -204,64 +232,42 @@ cor(df_final$puntuacion,df_final$precio_euros)
 
 
 p1=ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning)) + theme (axis.title.y = element_blank()) + xlab("Aire Acondicionado")
-p2=ggplot(data=df_final) + geom_boxplot(aes(x=internet,y=precio_euros,fill=internet))  + theme (axis.title.y = element_blank()) + xlab("Internet")
+
 p3=ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=Wifi)) + theme (axis.title.y = element_blank()) + xlab("WiFi")
 p4=ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast)) + theme (axis.title.y = element_blank()) + xlab("Desayuno")
 p5=ggplot(data=df_final) + geom_boxplot(aes(x=TV,y=precio_euros,fill=TV)) + theme (axis.title.y = element_blank()) + xlab("Televisión")
-p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
+
 p7=ggplot(data=df_final) + geom_boxplot(aes(x=Pets_allowed,y=precio_euros,fill=Pets_allowed)) + theme (axis.title.y = element_blank()) + xlab("Admite Mascotas")
+p8=ggplot(data=df_final) + geom_boxplot(aes(x=check_in_24_hs,y=precio_euros,fill=check_in_24_hs)) + theme (axis.title.y = element_blank()) + xlab("Check-In 24hs")
 
 
 #p3=ggplot(data=df_final) + geom_point(aes(x=cuello,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-p6
+p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
 
-p1+p2+p3+p4+p5
+(p1+p3+p4+p5+p7+p8)/p6
+
+p5
+
+De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
+Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
+
+
 ```
 
 
 
-```{r}
-library(codpostal)
-library(dplyr)
-
-install.packages("codpostal")
-# Obtener los códigos postales de Barcelona
-barcelona_codigos_postales <- codpostal::cp_barcelona()
-
-# Convertir los datos a un dataframe y seleccionar solo las columnas necesarias
-barcelona_df <- as.data.frame(barcelona_codigos_postales) %>%
-  select(CODIGO_POSTAL, BARRIO)
-
-# Ver los primeros registros
-head(barcelona_df)
-```
 
 
 
-```{r}
+
+
+
+
+```{r, eval=FALSE}
   
-  # Agregar el vector distritos al data.frame
-
-
-#miramos si hay valores de las variables explicativas para todos los id
-
-airbnb_barcelona %>% filter(is.na(puntuacion)) %>% select(puntuacion) #3891 obs sin valor 
-airbnb_barcelona %>% filter(is.na(barrio)) %>% select(barrio) #1 sin valor
-airbnb_barcelona %>% filter(is.na(personas)) %>% select(personas) #info de todas
-airbnb_barcelona %>% filter(is.na(banios)) %>% select(banios) #9 sin valor
-airbnb_barcelona %>% filter(is.na(habitaciones)) %>% select(habitaciones) #3 sin valor
-airbnb_barcelona %>% filter(is.na(camas)) %>% select(camas) #16 sin valor
-airbnb_barcelona %>% filter(is.na(precio_euros)) %>% select(precio_euros) #info de todas
-airbnb_barcelona %>% filter(is.na(estancia_min)) %>% select(estancia_min) #info de todas
-airbnb_barcelona %>% filter(is.na(amenities)) %>% select(amenities) #info de todas
-airbnb_barcelona %>% filter(is.na(tipo_habitacion)) %>% select(tipo_habitacion) #info de todas
-airbnb_barcelona %>% filter(is.na(longitud)) %>% select(longitud) #info de todas
-airbnb_barcelona %>% filter(is.na(latitud)) %>% select(latitud) #info de todas
-airbnb_barcelona %>% filter(is.na(cod_postal)) %>% select(cod_postal) #506 sin valor
-
 
 #SELECCIÓN DE VARIABLES
 
@@ -270,10 +276,101 @@ modelos_posibles=2**k-1
 
 #hay 16383 modelos posibles, vamos a aplicar los procedimientos de hipotesis para
 #llegar al mejor modelo
-library(tidyverse)
 
-#SI HAGO mod0 SE ROMPE R)??
-mod0 <- lm(precio_euros ~  distritos + tipo_habitacion + personas + banios + habitaciones + camas + amenities + estancia_min + puntuacion, data=airbnb_barcelona)
+# Definimos la primer versión del modelo
+
+mod0 <- lm(precio_euros ~  distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Cable_TV+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock, data=df_final)
+
+#para "vichar"
+anova(mod0)
+summary(mod0)
+
+```
+
+
+## Diagnóstico
+
+
+```{r, echo=FALSE}
+#hacer todo de diapo 4 del tercer antes de empezar a corregir
+#1
+
+## PREGUNTARRR
+
+ df_final %>% select(Air_conditioning,Pool)
+
+
+vif(mod0)
+#si el VIF es alto la variable es comb lineal de las demás, gatos2, ratones tienen VIF altos (>5)
+
+# No olvidemos ralizar la etapa de diagnostico
+datos$s_i <- rstudent(mod0)
+ggplot(datos, aes(x = marca, y = s_i, fill= marca)) +
+  geom_boxplot() +
+  xlab('Marca') + 
+  ylab('residuos studentizados') +
+  theme_bw()
+
+# homoscedasticidad
+library(skedastic)
+breusch_pagan(mod0)
+```
+
+
+## ATIPICOS
+
+```{r, echo=FALSE}
+
+#7
+# medidas de influencia
+h_i <- influence(mod0)$hat
+D_i <- cooks.distance(mod0)
+df <- data.frame(i = 1:12848,
+                 h_i = h_i,
+                 D_i = D_i)
+
+a = df %>% filter(D_i>4/12848)%>% arrange(desc(D_i)) %>% head(50) %>% pull(i)
+
+## SACAR LOS ATIPICOS CON ESTE "-"
+## FILTRAR PRIMERO TODOS LOS N/A EN LA ETAPA INICIAL
+# IR SACANDO DE A POCOS POR SI APARECEN NUEVOS ATIPICOS Y VOLVER A CALCULAR
+
+df_final[-a,]
+
+
+
+
+
+# leverage
+ggplot(df, aes(x = i, y = h_i)) +
+  geom_point() +
+  geom_segment(aes(x = i, xend = i, y = 0, yend = h_i)) +
+  xlab('') +
+  ylab(expression(h[i])) +
+  geom_abline(slope = 0, intercept = 2*5/50, col = 2, linetype = 'dashed')
+
+# Distancia de Cook
+ggplot(df, aes(x = i, y = D_i)) +
+  geom_point() +
+  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
+  xlab('') +
+  ylab(expression(D[i])) +
+  geom_abline(slope = 0, intercept = 4/50, col = 2, linetype = 'dashed')
+#si hay observaciones influyentes, en el grafico de leverage no se ve, solo se ve ruido, pero en el grafico de cook los que están por arriba de la linea roja son influyentes.
+
+
+# normalidad
+library(qqplotr)
+ggplot(data = df_final, aes(sample = s_i)) +
+  stat_qq_band(fill = 2) +
+  stat_qq_line(col = 2) +
+  stat_qq_point() +
+  xlab("Cuantiles teoricos")+
+  ylab("Cuantiles empiricos")
+
+shapiro.test(datos$s_i)
+
+
 coef(mod0)
 summary(mod0)
 
@@ -307,22 +404,3 @@ summaryHH(modS)
 ```
 
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
