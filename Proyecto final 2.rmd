@@ -87,6 +87,13 @@ df= df %>% select(barrio,
                                         )
 
 df%>%vis_miss()
+
+#Se podría "logaritmear" la variable de precio. Hacer histograma de precio
+
+
+
+
+
 #df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
 
 ```
@@ -210,6 +217,14 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                   Smart_lock=as.factor(Smart_lock)
              )
 
+
+## PROBAR SACAR CAMAS. ARMAR TRES GRUPOS POR HABITACIÓN DE TAMAÑANO (CHICO, MEDIANO GRANDE) Y ARMAR TRES GRUPOS DE BAÑOS (POCOS, MUCHOS Y ETC.)
+
+
+
+df_final%>% ggplot() + geom_histogram(aes(x=log(precio_euros)))
+  
+
 ```
 
 
@@ -241,11 +256,11 @@ p8=ggplot(data=df_final) + geom_boxplot(aes(x=check_in_24_hs,y=precio_euros,fill
 #p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=precio_euros,fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
+p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
 
-(p1+p3+p4+p5+p7+p8)/p6
+##(p1+p3+p4+p5+p7+p8)/p6
 
-p5
+p6
 
 
 
@@ -267,7 +282,7 @@ llegar al mejor modelo
   
 # Definimos la primer versión del modelo
 
-mod0 <- lm(precio_euros ~  distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock, data=df_final)
+mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock, data=df_final)
 
 #para "vichar"
 Anova(mod0)
@@ -327,6 +342,7 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point() +
   geom_hline(yintercept = 0)
+# REVISAR LOS PRECIOS MENORES DE 0, POSIBLE SOLUCIÓN USAR LOGARITMO DE Y
 
 
 #Test de Bush-Pagan
@@ -362,9 +378,13 @@ ggplot(data = df_final, aes(sample = residuos_int)) +
   xlab("Cuantiles teoricos")+
   ylab("Cuantiles empiricos")
 
+#DATOS FUERA DE LA BANDA. SE PUEDE VER QUE NO HAY NORMALIDAD.
+#Randomize
+
 #PREGUNTA: ¿Por que no corre? ¿Otras opciones?
 shapiro.test(df_final$residuos_int)
-
+## USAR OTRO TEST 
+ks.test(df_final$residuos_int)
 
 ```
 
@@ -399,6 +419,9 @@ df <- data.frame(i = 1:nrow(df_final),
                  D_i = D_i)
 
 #PREGUNTAR: N TIENE QUE SER EL TAMAÑO DE DF? O ES 50 FIJO?
+#OBVIAR LA COTA POR LA CANTIDAD DE DATOS.
+
+
 
 n=nrow(df_final)
 
@@ -407,7 +430,7 @@ ggplot(df, aes(x = i, y = D_i)) +
   geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
   xlab('') +
   ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/50, col = 2, linetype = 'dashed')
+  geom_abline(slope = 0, intercept = 4/N, col = 2, linetype = 'dashed')
 
 
 
@@ -415,6 +438,8 @@ ggplot(df, aes(x = i, y = D_i)) +
 # IR SACANDO DE A POCOS POR SI APARECEN NUEVOS ATIPICOS Y VOLVER A CALCULAR
 
 a = df %>% filter(D_i>(4/50))%>% arrange(desc(D_i)) %>% head(50) %>% pull(i)
+
+# valor de 50 a "gusto"
 
 ## SACAR LOS ATIPICOS CON ESTE "-"
 
