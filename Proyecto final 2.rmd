@@ -76,15 +76,17 @@ df= df %>% select(barrio,
                   Breakfast,	
                   Pets_allowed,	
                  # Cable_TV,	
-                  Pool,	
+                 # Pool,	
                   Patio_or_balcony,	
                   check_in_24_hs,	
-                  Smart_lock)%>% filter(is.na(puntuacion)==FALSE,
+                 # Smart_lock
+                 )%>% filter(is.na(puntuacion)==FALSE,
                                         is.na(barrio)==FALSE,
                                         is.na(banios)==FALSE,
                                         is.na(habitaciones)==FALSE,
                                         is.na(camas)==FALSE
                                         )
+            
 
 df%>%vis_miss()
 
@@ -190,18 +192,19 @@ for (i in seq_along(df$barrio)) {
 }
 df$distritos <- distritos
 
+
 ```
 
 
 
 ```{r}
 
-summary(df)
+
 
 df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        banios=as.factor(banios),
                        camas=as.factor(camas),
-                       habitaciones=as.factor(habitaciones),
+                      
                        distritos=as.factor(distritos),
                        wifi=as.factor(Wifi),
                       TV=as.factor(TV),	 
@@ -210,14 +213,16 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                   Elevator=as.factor(Elevator),	
                   Breakfast=as.factor(Breakfast),	
                   Pets_allowed=as.factor(Pets_allowed),	
-                 # Cable_TV=as.factor(Cable_TV),	
-                  Pool=as.factor(Pool),	
                   Patio_or_balcony=as.factor(Patio_or_balcony),	
-                  check_in_24_hs=as.factor(check_in_24_hs),	
-                  Smart_lock=as.factor(Smart_lock)
+                  check_in_24_hs=as.factor(check_in_24_hs)	
+                  
+                #  grupo_habitacion=ifelse(habitaciones>=0 &&          habitaciones<3,'Chica',ifelse(habitaciones>=3 && habitaciones<6,'Mediana','Grande'))
+                 , grupo_habitacion=cut(habitaciones,c(0,2,5,Inf))
              )
 
+df_final$grupo_habitacion
 
+  
 ## PROBAR SACAR CAMAS. ARMAR TRES GRUPOS POR HABITACIÓN DE TAMAÑANO (CHICO, MEDIANO GRANDE) Y ARMAR TRES GRUPOS DE BAÑOS (POCOS, MUCHOS Y ETC.)
 
 
