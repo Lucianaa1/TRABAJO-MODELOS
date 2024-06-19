@@ -1,13 +1,59 @@
 ---
-title: "Trabajo Final"
-output: pdf_document
-date: "2024-05-23"
+nocite: '@*'
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  bookdown::pdf_document2:
+    fig_caption: yes
+  html_document:
+    df_print: paged
 ---
+
+\thispagestyle{empty} 
+\begin {center}
+
+
+UNIVERSIDAD DE LA REPÚBLICA
+
+Facultad de Ciencias Económicas y de Administración
+
+Licenciatura en Estadística
+
+\vspace{4.5 cm}
+
+
+\textbf{\large  Análisis explicativo del precio de apartamentos publicados en Airbnb de Barcelona}
+
+
+\vspace{1.5 cm}
+
+\textbf{Viscailuz, Luciana       Miranda, Germán}\\
+\textbf{Junio 2024}
+
+
+\end{center}
+
+
+\vspace{3.5cm}
+
+\begin{center}
+\textbf{Trabajo final de Modelos Lineales}\\
+\vspace{1.0 cm}
+
+\end{center}
+
+\newpage
+
+\renewcommand{\contentsname}{Índice}
+
+\tableofcontents
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+\newpage 
  
 # Introducción
 
@@ -21,8 +67,7 @@ Finalmente, el trabajo e interpretación de los datos, tanto sobre como actúan 
 
   
 
-```{r ,echo=FALSE,warning=FALSE}
-#install.packages("codpostal")
+```{r ,echo=FALSE,warning=FALSE,include=FALSE}
 library(here)
 library(readxl)
 library(tidyverse)
@@ -31,6 +76,8 @@ library(visdat)
 library(patchwork)
 library(car)
 library(qqplotr)
+library(skedastic)
+library(faraway)
 ```
 
 ```{r}
@@ -42,21 +89,24 @@ summary(df)
 
 
 
+## Los datos
+
+Como se mencionó anteriormente, se disponía de la información de 16.761 apartamentos de Barcelona, donde se nombraban las características que los huéspedes toman en cuenta al momento de elegir su hospedaje y por lo tanto podrían llegar a incidir en su precio, entre estas se destacaba, ubicación, cantidad de camas y baños, cuantas personas se aceptaban, entre otras. 
+
+Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se pasaron a factor algunas de las cuantitativas para su mejor interpretación. 
+
+La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
+
+Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que #se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
+
+Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
+
+Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
+
+
+
 ```{r}
 
-#Los datos: 
-
-#Como se mencionó anteriormente, se disponía de la información de 16.761 apartamentos de Barcelona, donde se nombraban las características que los huéspedes toman en cuenta al momento de elegir su hospedaje y por lo tanto podrían llegar a incidir en su precio, entre estas se destacaba, ubicación, cantidad de camas y baños, cuantas personas se aceptaban, entre otras. 
-
-#Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se pasaron a factor algunas de las cuantitativas para su mejor interpretación. 
-
-#La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
-
-#Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que #se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
-
-#Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
-
-#Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
 
 df%>%vis_miss()
 
@@ -94,9 +144,14 @@ df%>%vis_miss()
 
 
 
+df%>%ggplot()+geom_histogram(aes(x=precio_euros))
+
+# Se "normalizan" más los datos con Log(Precio_euros)
+
+df%>%ggplot()+geom_histogram(aes(x=log(precio_euros)))
 
 
-#df%>% summarise(sum_wifi=sum(Wifi),sum_int=sum(Internet))
+
 
 ```
 
@@ -199,43 +254,42 @@ df$distritos <- distritos
 
 ```{r}
 
-
+#Pasamos las variables a factor y definimos dos nuevas variables "grupo_habitacion" y "grupo_banios" que "achican" las categorías de habitación y baños respectivamente.
 
 df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
-                       banios=as.factor(banios),
                        camas=as.factor(camas),
-                      
                        distritos=as.factor(distritos),
                        wifi=as.factor(Wifi),
-                      TV=as.factor(TV),	 
-                  Wifi=as.factor(wifi),	
-                  Air_conditioning=as.factor(Air_conditioning),	
-                  Elevator=as.factor(Elevator),	
-                  Breakfast=as.factor(Breakfast),	
-                  Pets_allowed=as.factor(Pets_allowed),	
-                  Patio_or_balcony=as.factor(Patio_or_balcony),	
-                  check_in_24_hs=as.factor(check_in_24_hs)	
-                  
-                #  grupo_habitacion=ifelse(habitaciones>=0 &&          habitaciones<3,'Chica',ifelse(habitaciones>=3 && habitaciones<6,'Mediana','Grande'))
-                 , grupo_habitacion=cut(habitaciones,c(0,2,5,Inf))
+                       TV=as.factor(TV),	 
+                       Air_conditioning=as.factor(Air_conditioning),	
+                       Elevator=as.factor(Elevator),	
+                       Breakfast=as.factor(Breakfast),	
+                       Pets_allowed=as.factor(Pets_allowed),	
+                       Patio_or_balcony=as.factor(Patio_or_balcony),	
+                       check_in_24_hs=as.factor(check_in_24_hs),	
+                       grupo_habitacion=ifelse(habitaciones>=0 & habitaciones<3,'Chica',ifelse(habitaciones>=3 & habitaciones<6,'Mediana','Grande')),
+                       grupo_banios=ifelse(banios>=0 & banios<2,'Pocos',ifelse(banios>=2 & banios<5,'Intermedio','Muchos'))
              )
 
-df_final$grupo_habitacion
+df_final
 
-  
+
 ## PROBAR SACAR CAMAS. ARMAR TRES GRUPOS POR HABITACIÓN DE TAMAÑANO (CHICO, MEDIANO GRANDE) Y ARMAR TRES GRUPOS DE BAÑOS (POCOS, MUCHOS Y ETC.)
 
 
 
-df_final%>% ggplot() + geom_histogram(aes(x=log(precio_euros)))
   
 
 ```
 
 
+# Análisis exploratorio
+
+Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
+
 ```{r, echo=FALSE,warning=FALSE}
 
-#Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
+
 
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
@@ -275,7 +329,10 @@ p6
 De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
 Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
 
-#SELECCIÓN DE VARIABLES
+
+# Metodología
+
+## Selección de variables
 
 k=ncol(airbnb_barcelona)-1
 modelos_posibles=2**k-1
@@ -287,13 +344,17 @@ llegar al mejor modelo
   
 # Definimos la primer versión del modelo
 
-mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock, data=df_final)
+mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_final)
 
 #para "vichar"
 Anova(mod0)
-#summary(mod0)
+summary(mod0)
 
 ```
+
+
+## Diagnóstico
+
 Luego de la limpieza de datos y estadística descriptiva se comenzó la etapa de diagnótico, esta etapa es imprescindible debido a que el cumplimiento de todos los supuestos sobre el modelo es el que permite afirmar que las inferencias realizadas son validas.
 Entre estos supuestos se encuentran:
 
@@ -301,9 +362,9 @@ Multicolinealidad: en está prueba se busca que ninguna de las columnas de la ma
 
 Linealidad: este supuesto se basa en la linealidad de la variable precio_euros y cada una de las variables explicativas, si en el modelo no hay linealidad se presentarán probelmas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los Yˆ y εˆ, en el cual se busca no encontrar patrones. ##PREGUNTAR 
 
-## Diagnóstico
 
-## Multicolinealidad
+
+### Multicolinealidad
 
 ```{r}
 library(car)
@@ -328,9 +389,9 @@ print(kA)
 ```
 
 
-## Homosedasticidad
+### Homosedasticidad
 
-```{r}
+```{r, eval=FALSE}
 
 res_ext<-rstudent(mod0) #residuos
 res_int<-rstandard(mod0) #residuos
@@ -352,8 +413,8 @@ ggplot(df_final, aes(x = predichos , y = residuos)) +
 
 #Test de Bush-Pagan
 #3
-install.packages("skedastic")
-library(skedastic)
+#install.packages("skedastic")
+
 breusch_pagan(mod0)
 
 #hipotesis nula es que todos tienen la misma varianza, es decir, hay homoscedasticidad, la otra hipotesis es que hay al menos uno que tiene una varianza diferente a sigma cuadrado
@@ -364,16 +425,16 @@ breusch_pagan(mod0)
 # histogramas
 hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas
 #Q-Q plot
-qqPlot(res)
+qqPlot(res_ext)
 plot(density(df_final$residuos))
 
 
 ```
 
 
-## Normalidad
+### Normalidad
 
-```{r}
+```{r, eval=FALSE}
 
 
 ggplot(data = df_final, aes(sample = residuos_int)) +
@@ -402,14 +463,14 @@ ks.test(df_final$residuos_int)
 #PREGUNTAR: CONFIRMAR CON EL PROFE SI SIRVE SOLO PARA VARIABLES CUALITATIVAS
 crPlot(mod0,"distritos")
 crPlot(mod0,"tipo_habitacion")
-crPlot(mod0,"habitaciones")
+crPlot(mod0,"grupo_habitacion")
 crPlot(mod0,"estancia_min")
 
 
 ```
 
 
-## Atípicos
+### Atípicos
 
 ```{r, echo=FALSE}
 
@@ -435,7 +496,7 @@ ggplot(df, aes(x = i, y = D_i)) +
   geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
   xlab('') +
   ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/N, col = 2, linetype = 'dashed')
+  geom_abline(slope = 0, intercept = 4/n, col = 2, linetype = 'dashed')
 
 
 
@@ -467,9 +528,9 @@ ggplot(df, aes(x = i, y = h_i)) +
 
 
 
-## Selección del mejor modelo
+### Selección del mejor modelo
 
-```{r}
+```{r ,eval=FALSE}
 
 
 coef(mod0)
@@ -477,6 +538,7 @@ summary(mod0)
 
 #CUAL ES LA LIBRERIA??
 #forward
+library(mixlm)
 modF <- forward(mod0, alpha = 0.05)
 length(coef(modF))  # parametros
 summary(modF)
@@ -503,3 +565,8 @@ help(anova)
 summaryHH(modS)
 ```
 
+# Resultados
+
+# Conclusiones
+
+# Bibliografía
