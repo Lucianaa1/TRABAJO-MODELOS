@@ -272,7 +272,7 @@ p6
 
 ```
 
-De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
+#ARREGLAR: De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
 Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
 
 #SELECCIÓN DE VARIABLES
@@ -301,9 +301,11 @@ Multicolinealidad: en está prueba se busca que ninguna de las columnas de la ma
 
 Linealidad: este supuesto se basa en la linealidad de la variable precio_euros y cada una de las variables explicativas, si en el modelo no hay linealidad se presentarán probelmas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los Yˆ y εˆ, en el cual se busca no encontrar patrones. #NO NOS PREOCUPEMOS
 
-Homoscedasticidad: se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante,se va a entender esto como que la varianza no depende de ninguna de las variables explicativas. Esta prueba se verá mediante gráficos que relaciona cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde buscamos no rechazar la hipótesis nula.
+Homoscedasticidad: se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante,se va a entender esto como que la varianza no depende de ninguna de las variables explicativas. Esta prueba se verá mediante gráficos que relaciona cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde buscamos no rechazar la hipótesis nula. #EL PROFE DIJO QUE AL SER TANTAS VARIABLES (TODO) SIEMPRE VA A SER SIGNIFICATIVO, PODEMOS AGREGARLO POR ESCRITO
 
+Normalidad: se refiere a que los residuos deben tener una distribución normal, este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones. #AL SER TANTAS OBSERVACIONES SON "ROBUSTAS" A LA NORMALIDAD (ALGO ASÍ DIJO EL PROFE)
 
+En las siguientes lineas del script se pusieron a prueba cada uno de los supuestos antes mencionados.
 
 ## Diagnóstico
 
