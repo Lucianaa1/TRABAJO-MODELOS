@@ -374,11 +374,7 @@ En las siguientes lineas del script se pusieron a prueba cada uno de los supuest
 
 ```{r}
 library(car)
-vif(mod0)
 
-#si el VIF es alto la variable es comb lineal de las demás, gatos2, ratones tienen VIF altos (>5)
-
-#NO SE PUEDE CALCULAR EL VIF ENTONCES CALCULAMOS EN NUMERO DE CONDICION #PREGUNTAR
 X <- model.matrix(mod0)
 XX <-t(X)%*%X
 eigen_result <- eigen(XX) #valores y vectores propios de XX
@@ -390,6 +386,12 @@ print(valores_propios)
 # numero de condicion
 kA <- sqrt(max(valores_propios)/min(valores_propios))
 print(kA)
+
+vif(mod0)
+
+#el número de condición es muy alto, lo que nos dice que hay problemas de multicolinealidad, mirando los VIF de cada una de las variables todos son mayores a 1 pero ninguno mayor a 5, por lo cual no se podría determinar cual es la variable causante de la multicolinealidad.
+#importante recordar que no estamos estimando el precio en euros, sino que el logaritmo del precio en euros
+
 ## VER SCRIPTS DE CLASE
 
 ```
@@ -415,13 +417,14 @@ ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point() +
   geom_hline(yintercept = 0)
 # REVISAR LOS PRECIOS MENORES DE 0, POSIBLE SOLUCIÓN USAR LOGARITMO DE Y
+#en el gráfico se puede ver que la mayoría de los puntos se encuentran "agrupados", (Eso cuenta como un patrón?)
 
-
-#Test de Bush-Pagan
 #3
 #install.packages("skedastic")
 
 breusch_pagan(mod0)
+#buscamos NO rechazar H0, el p-valor es 1.11e-129, muy chico, por lo cual se rechaza H0, debemos intentar subir el p-valor.
+#H0 nos dice que los errores son homoscedasticos
 
 #hipotesis nula es que todos tienen la misma varianza, es decir, hay homoscedasticidad, la otra hipotesis es que hay al menos uno que tiene una varianza diferente a sigma cuadrado
 #rechazo H0, NO HAY HOMOSEDASTICIDAD, p valor muy chico.
@@ -430,10 +433,12 @@ breusch_pagan(mod0)
 #4
 # histogramas
 hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas
+#nos gustaría ver que tenga la forma de una campana simetrica, en este caso tiene más o menos la forma, importante tomar en cuenta que el tamaño de los bins influye muchísimo en la forma del histograma.
+
 #Q-Q plot
 qqPlot(res_ext)
 plot(density(df_final$residuos))
-
+#los puntos no están sobre la recta, nos hay normalidad
 
 ```
 
@@ -453,9 +458,7 @@ ggplot(data = df_final, aes(sample = residuos_int)) +
 #DATOS FUERA DE LA BANDA. SE PUEDE VER QUE NO HAY NORMALIDAD.
 #Randomize
 
-#PREGUNTA: ¿Por que no corre? ¿Otras opciones?
-shapiro.test(df_final$residuos_int)
-## USAR OTRO TEST 
+## USAR OTRO TEST #NO FUNCIONA
 ks.test(df_final$residuos_int)
 
 ```
