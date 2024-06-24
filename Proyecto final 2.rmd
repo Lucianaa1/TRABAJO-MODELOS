@@ -99,7 +99,9 @@ La información de código postal y barrio se decidió resumirla en una variable
 
 Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que #se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
 
-Del total de observaciones se operó con – debido a que las restantes contaban con datos faltantes.   
+Se definieron dos nuevas variables, "grupo_habitacion" y "grupo_banios", donde se agrupan la cantidad de habitaciones y baños respectivamente, para así disminuir la cantidad de categorías de cada variable.
+
+Del total de observaciones se operó con 12.848 debido a que las restantes contaban con datos faltantes.   
 
 Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
 
@@ -140,14 +142,10 @@ df= df %>% select(barrio,
 
 df%>%vis_miss()
 
-#Se podría "logaritmear" la variable de precio. Hacer histograma de precio
+#HAY DOS HISTOGRAMAS, CON CUAL NOS QUEDAMOS??? #RESOLVER
 
-
-
-df%>%ggplot()+geom_histogram(aes(x=precio_euros))
-
+df%>%ggplot()+geom_histogram(aes(x=precio_euros))  
 # Se "normalizan" más los datos con Log(Precio_euros)
-
 df%>%ggplot()+geom_histogram(aes(x=log(precio_euros)))
 
 
@@ -160,9 +158,6 @@ df%>%ggplot()+geom_histogram(aes(x=log(precio_euros)))
 ```{r}
 
 distritos<-character(length(nrow(df)))
-
-
-#CON AYUDA, primero hay que sacar las observaciones que no tienen el dato del barrio para que funcione el codigo
   
 for (i in seq_along(df$barrio)) {
     if (df$barrio[i] == "Sant Marta"|| 
@@ -274,12 +269,6 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
 df_final
 
 
-## PROBAR SACAR CAMAS. ARMAR TRES GRUPOS POR HABITACIÓN DE TAMAÑANO (CHICO, MEDIANO GRANDE) Y ARMAR TRES GRUPOS DE BAÑOS (POCOS, MUCHOS Y ETC.)
-
-
-
-  
-
 ```
 
 
@@ -326,7 +315,7 @@ p6
 
 ```
 
-#ARREGLAR: De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
+#RESOLVER, QUE GRÁFICOS VAMOS A HACER???: De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
 Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
 
 
@@ -397,7 +386,7 @@ vif(mod0)
 ```
 
 
-### Homosedasticidad
+### Linelidad #RESOLVER, EL SUPUESTO SE VERIFICA ASÍ??
 
 ```{r, eval=FALSE}
 
@@ -416,10 +405,9 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point() +
   geom_hline(yintercept = 0)
-# REVISAR LOS PRECIOS MENORES DE 0, POSIBLE SOLUCIÓN USAR LOGARITMO DE Y
-#en el gráfico se puede ver que la mayoría de los puntos se encuentran "agrupados", (Eso cuenta como un patrón?)
+#en el gráfico se puede ver que la mayoría de los puntos se encuentran "agrupados", (Eso cuenta como un patrón?) #RESOLVER
 
-#3
+#Homoscedasticidad
 #install.packages("skedastic")
 
 breusch_pagan(mod0)
@@ -430,7 +418,7 @@ breusch_pagan(mod0)
 #rechazo H0, NO HAY HOMOSEDASTICIDAD, p valor muy chico.
 
 
-#4
+### Normalidad
 # histogramas
 hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas
 #nos gustaría ver que tenga la forma de una campana simetrica, en este caso tiene más o menos la forma, importante tomar en cuenta que el tamaño de los bins influye muchísimo en la forma del histograma.
@@ -439,11 +427,6 @@ hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que
 qqPlot(res_ext)
 plot(density(df_final$residuos))
 #los puntos no están sobre la recta, nos hay normalidad
-
-```
-
-
-### Normalidad
 
 ```{r, eval=FALSE}
 
@@ -458,7 +441,7 @@ ggplot(data = df_final, aes(sample = residuos_int)) +
 #DATOS FUERA DE LA BANDA. SE PUEDE VER QUE NO HAY NORMALIDAD.
 #Randomize
 
-## USAR OTRO TEST #NO FUNCIONA
+#NO FUNCIONA #RESOLVER
 ks.test(df_final$residuos_int)
 
 ```
@@ -469,7 +452,7 @@ ks.test(df_final$residuos_int)
 #PUNTO 6 TALLER
 #distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock
 
-#PREGUNTAR: CONFIRMAR CON EL PROFE SI SIRVE SOLO PARA VARIABLES CUALITATIVAS
+#QUE SIGNIFICAN ESTOS GRÁFICOS? ES PARA EL SUPUESTO DE LINEALIDAD? ES NECESARIO HACERLOS???#RESOLVER
 crPlot(mod0,"distritos")
 crPlot(mod0,"tipo_habitacion")
 crPlot(mod0,"grupo_habitacion")
@@ -493,9 +476,6 @@ df <- data.frame(i = 1:nrow(df_final),
                  h_i = h_i,
                  D_i = D_i)
 
-#PREGUNTAR: N TIENE QUE SER EL TAMAÑO DE DF? O ES 50 FIJO?
-#OBVIAR LA COTA POR LA CANTIDAD DE DATOS.
-
 
 
 n=nrow(df_final)
@@ -507,10 +487,6 @@ ggplot(df, aes(x = i, y = D_i)) +
   ylab(expression(D[i])) +
   geom_abline(slope = 0, intercept = 4/n, col = 2, linetype = 'dashed')
 
-
-
-# SELECCIONAMOS TOP 50 DE ATÍPICOS
-# IR SACANDO DE A POCOS POR SI APARECEN NUEVOS ATIPICOS Y VOLVER A CALCULAR
 
 a = df %>% filter(D_i>(4/50))%>% arrange(desc(D_i)) %>% head(50) %>% pull(i)
 
@@ -534,10 +510,13 @@ ggplot(df, aes(x = i, y = h_i)) +
 
 
 ```
+#A partir de la etapa del diagnóstico se llegó a diferentes conclusiones sobre que hay que cambiar en el modelo para que este sea lo mejor posible, se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 2792.348, es decir, hay problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
+#Luego se siguió con el supuesto de linelidad, donde se realizó el grafico entre residuos y predichos. #RESOLVER
+#Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el que se presentó, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. Subir dicho p-valor fue unos de los cambios que se realizó en el modelo.
+#Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica, en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov #RESOLVER
+#Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en este modelo las observaciones son muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/300, en ese punto las observaciones atípicas terminan siendo las más diferentes.
 
-
-
-### Selección del mejor modelo
+#A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
 
 ```{r ,eval=FALSE}
 
