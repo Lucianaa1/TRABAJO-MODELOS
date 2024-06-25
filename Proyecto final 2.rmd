@@ -59,7 +59,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Airbnb es una compañía dedicada a la oferta de alojamientos de carácter vacacional en muchos de los países del mundo. Esta funciona a partir de un programa digital donde los anfitriones pueden publicar sus propiedades para que los clientes puedan verlas y elegir el alojamiento que más se adapte a sus necesidades. 
 
-En este proyecto se trabajó con algunas propiedades de Barcelona y la motivación inicial de su realización era estimar el precio en euros de diferentes apartamentos según las características de cada uno. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de dicha ciudad. 
+
+En este proyecto se trabajó con algunas de las propiedades publidcadas en esta plataforma en la ciudad Barcelona, España. Inicialmente, nuestra motivación del proyecto fue poder estimar el precio (en euros) de diferentes apartamentos según las características de cada uno. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de dicha ciudad. 
 
 La información con la que se contaba era buena pero excesiva, lo que llevó a que algunos datos fueran redundantes, por lo cual una parte importante de este proyecto fue la inicial, donde se realizó una limpieza de datos para así disponer de información que permita realizar una buena estimación e interpretación de los datos. 
 
@@ -80,6 +81,7 @@ library(skedastic)
 library(faraway)
 ```
 
+
 ```{r}
 df = read_excel(here("airbnb_barcelona_v2.xlsx"))
 
@@ -97,7 +99,7 @@ Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se
 
 La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
 
-Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que #se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
+Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
 
 Se definieron dos nuevas variables, "grupo_habitacion" y "grupo_banios", donde se agrupan la cantidad de habitaciones y baños respectivamente, para así disminuir la cantidad de categorías de cada variable.
 
@@ -127,11 +129,8 @@ df= df %>% select(barrio,
                   Elevator,	
                   Breakfast,	
                   Pets_allowed,	
-                 # Cable_TV,	
-                 # Pool,	
                   Patio_or_balcony,	
-                  check_in_24_hs,	
-                 # Smart_lock
+                  check_in_24_hs
                  )%>% filter(is.na(puntuacion)==FALSE,
                                         is.na(barrio)==FALSE,
                                         is.na(banios)==FALSE,
@@ -147,9 +146,6 @@ df%>%vis_miss()
 df%>%ggplot()+geom_histogram(aes(x=precio_euros))  
 # Se "normalizan" más los datos con Log(Precio_euros)
 df%>%ggplot()+geom_histogram(aes(x=log(precio_euros)))
-
-
-
 
 ```
 
@@ -242,7 +238,6 @@ for (i in seq_along(df$barrio)) {
 }
 df$distritos <- distritos
 
-
 ```
 
 
@@ -254,7 +249,7 @@ df$distritos <- distritos
 df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        camas=as.factor(camas),
                        distritos=as.factor(distritos),
-                       wifi=as.factor(Wifi),
+                       Wifi=as.factor(Wifi),
                        TV=as.factor(TV),	 
                        Air_conditioning=as.factor(Air_conditioning),	
                        Elevator=as.factor(Elevator),	
@@ -262,8 +257,8 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        Pets_allowed=as.factor(Pets_allowed),	
                        Patio_or_balcony=as.factor(Patio_or_balcony),	
                        check_in_24_hs=as.factor(check_in_24_hs),	
-                       grupo_habitacion=ifelse(habitaciones>=0 & habitaciones<3,'Chica',ifelse(habitaciones>=3 & habitaciones<6,'Mediana','Grande')),
-                       grupo_banios=ifelse(banios>=0 & banios<2,'Pocos',ifelse(banios>=2 & banios<5,'Intermedio','Muchos'))
+                       grupo_habitacion=as.factor(ifelse(habitaciones>=0 & habitaciones<3,'Chica',ifelse(habitaciones>=3 & habitaciones<6,'Mediana','Grande'))),
+                       grupo_banios=as.factor(ifelse(banios>=0 & banios<2,'Pocos',ifelse(banios>=2 & banios<5,'Intermedio','Muchos')))
              )
 
 df_final
@@ -427,6 +422,7 @@ hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que
 qqPlot(res_ext)
 plot(density(df_final$residuos))
 #los puntos no están sobre la recta, nos hay normalidad
+```
 
 ```{r, eval=FALSE}
 
@@ -472,6 +468,7 @@ crPlot(mod0,"estancia_min")
 # medidas de influencia
 h_i <- influence(mod0)$hat
 D_i <- cooks.distance(mod0)
+
 df <- data.frame(i = 1:nrow(df_final),
                  h_i = h_i,
                  D_i = D_i)
@@ -485,17 +482,17 @@ ggplot(df, aes(x = i, y = D_i)) +
   geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
   xlab('') +
   ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/n, col = 2, linetype = 'dashed')
+  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed')
 
 
-a = df %>% filter(D_i>(4/50))%>% arrange(desc(D_i)) %>% head(50) %>% pull(i)
+a = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
 # valor de 50 a "gusto"
 
 ## SACAR LOS ATIPICOS CON ESTE "-"
 
 
-df_final[-a,] ##DATA FRAME FINAL SIN ATIPICOS.
+df_2=df_final[-a,] ##DATA FRAME FINAL SIN ATIPICOS.
 
 
 # DEFINIR SI LO DEJAMOS
@@ -510,13 +507,49 @@ ggplot(df, aes(x = i, y = h_i)) +
 
 
 ```
-#A partir de la etapa del diagnóstico se llegó a diferentes conclusiones sobre que hay que cambiar en el modelo para que este sea lo mejor posible, se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 2792.348, es decir, hay problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
-#Luego se siguió con el supuesto de linelidad, donde se realizó el grafico entre residuos y predichos. #RESOLVER
-#Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el que se presentó, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. Subir dicho p-valor fue unos de los cambios que se realizó en el modelo.
-#Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica, en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov #RESOLVER
-#Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en este modelo las observaciones son muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/300, en ese punto las observaciones atípicas terminan siendo las más diferentes.
 
-#A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
+
+```{r}
+mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
+
+#para "vichar"
+Anova(mod1)
+summary(mod1)
+
+
+mod2= lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
+Anova(mod2)
+summary(mod2)
+
+```
+
+
+
+```{r}
+
+```
+
+
+
+A partir de la etapa del diagnóstico se llegó a diferentes conclusiones sobre que hay que cambiar en el modelo para que este sea lo mejor posible, se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 2792.348, es decir, hay problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
+
+Luego se siguió con el supuesto de linelidad, donde se realizó el grafico entre residuos y predichos. #RESOLVER
+
+Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el que se presentó, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. Subir dicho p-valor fue unos de los cambios que se realizó en el modelo.
+
+Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica, en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov #RESOLVER
+
+Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en este modelo las observaciones son muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/300, en ese punto las observaciones atípicas terminan siendo las más diferentes.
+
+A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
+
+
+
+
+
+
+
+
 
 ```{r ,eval=FALSE}
 
