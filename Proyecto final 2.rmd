@@ -377,36 +377,37 @@ valores_propios <- eigen_result$values
 
 #data.frame(Valores_Propios=valores_propios) 
 
-#knitr::kable(valores_propios,col.names = "Valores Propios") %>%print()
+#RESOLVER: ¿LOS MOSTRAMOS?
+##knitr::kable(valores_propios,col.names = "Valores Propios") %>%print()
 ##print(valores_propios) 
 
+#Número de condición ¿LO MOSTRAMOS?
+kA <- sqrt(max(valores_propios)/min(valores_propios))
+print(kA)
 
 ```
 
-```{r}
+El número de condición es muy alto, lo que nos dice que hay problemas de multicolinealidad.
 
-# numero de condicion
-kA <- sqrt(max(valores_propios)/min(valores_propios))
-print(kA)
+
+```{r}
 
 vif(mod0)
 
 ## VER SCRIPTS DE CLASE
 
 ```
-El número de condición es muy alto, lo que nos dice que hay problemas de multicolinealidad, mirando los VIF de cada una de las variables todos son mayores a 1 pero ninguno mayor a 5, por lo cual no se podría determinar cual es la variable causante de la multicolinealidad.
+mirando los VIF de cada una de las variables todos son mayores a 1 pero ninguno mayor a 5, por lo cual no se podría determinar cual es la variable causante de la multicolinealidad.
 importante recordar que no estamos estimando el precio en euros, sino que el logaritmo del precio en euros
 
 
-### Linelidad #RESOLVER, EL SUPUESTO SE VERIFICA ASÍ??
+### Linelidad 
 
-```{r, eval=FALSE}
+#RESOLVER, EL SUPUESTO SE VERIFICA ASÍ??
 
+```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
 res_ext<-rstudent(mod0) #residuos
 res_int<-rstandard(mod0) #residuos
-
-
-
 yhat<-fitted(mod0) #ygorro
 #grafico
 
@@ -415,14 +416,20 @@ df_final$residuos <- res_ext #agrego los ygorro a la tabla
 df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 
 ggplot(df_final, aes(x = predichos , y = residuos)) +
-  geom_point() +
-  geom_hline(yintercept = 0)
+  geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
 #en el gráfico se puede ver que la mayoría de los puntos se encuentran "agrupados", (Eso cuenta como un patrón?) #RESOLVER
 
-#Homoscedasticidad
-#install.packages("skedastic")
+```
 
-breusch_pagan(mod0)
+
+### Homoscedasticidad
+
+```{r}
+
+#install.packages("skedastic")
+df_bp=data.frame(breusch_pagan(mod0))
+
+knitr::kable(df_bp)%>%print()
 #buscamos NO rechazar H0, el p-valor es 1.11e-129, muy chico, por lo cual se rechaza H0, debemos intentar subir el p-valor.
 #H0 nos dice que los errores son homoscedasticos
 
@@ -430,7 +437,12 @@ breusch_pagan(mod0)
 #rechazo H0, NO HAY HOMOSEDASTICIDAD, p valor muy chico.
 
 
+```
+
 ### Normalidad
+
+```{r}
+
 # histogramas
 hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas
 #nos gustaría ver que tenga la forma de una campana simetrica, en este caso tiene más o menos la forma, importante tomar en cuenta que el tamaño de los bins influye muchísimo en la forma del histograma.
@@ -442,7 +454,6 @@ plot(density(df_final$residuos))
 ```
 
 ```{r, eval=FALSE}
-
 
 ggplot(data = df_final, aes(sample = residuos_int)) +
   stat_qq_band(fill = 2) +
@@ -490,6 +501,7 @@ df <- data.frame(i = 1:nrow(df_final),
                  h_i = h_i,
                  D_i = D_i)
 
+#RESOLVER: ¿Este gráfico está asociado al id de cada observación correctamente?
 
 ggplot(df, aes(x = i, y = D_i)) +
   geom_point() +
@@ -497,6 +509,11 @@ ggplot(df, aes(x = i, y = D_i)) +
   xlab('') +
   ylab(expression(D[i])) +
   geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed')
+
+```
+
+
+```{r, echo=FALSE}
 
 
 a = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
@@ -510,7 +527,7 @@ df_final[a,]
 df_2=df_final[-a,] ##DATA FRAME FINAL SIN ATIPICOS.
 
 
-# DEFINIR SI LO DEJAMOS
+# RESOLVER: DEFINIR SI LO DEJAMOS
 # leverage
 ggplot(df, aes(x = i, y = h_i)) +
   geom_point() +
@@ -531,10 +548,15 @@ mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_bani
 Anova(mod1)
 summary(mod1)
 
+# p-valor de grupo_habitación alto, ¿está relacionado con el grupo de referencia? ¿Habrá que sacar la variable?
+
+
 
 mod2= lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
 Anova(mod2)
 summary(mod2)
+# si sacamos la variable, el r2 no cambia.
+
 
 ```
 
@@ -555,12 +577,7 @@ Por último se realizó el gráfico de la Distancia de Cook para observar si hab
 A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
 
 
-
-
-
-
-
-
+  
 
 ```{r ,eval=FALSE}
 
