@@ -5,8 +5,6 @@ output:
     latex_engine: xelatex
   bookdown::pdf_document2:
     fig_caption: yes
-  html_document:
-    df_print: paged
 ---
 
 \thispagestyle{empty} 
@@ -254,30 +252,40 @@ df_final
 
 Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
 
-```{r, results='asis',fig.cap="Dispersión de Precio (en euros) por localidad"}
-
-
-ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos))+theme_bw()  + theme (axis.title.y = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) + xlab("Distritos")
-
-```
-
-
-
-```{r, results='asis',fig.cap="Histograma de la variable de respuesta Precio" }
+```{r, echo=FALSE,results='asis',fig.cap="Histograma de la variable de respuesta Precio", results='asis'}
 
 #HAY DOS HISTOGRAMAS, CON CUAL NOS QUEDAMOS??? #RESOLVER
 
-h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + labs(title="Histograma del Precio",x="Precio (en Euros)")
+h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + theme (axis.title.y = element_blank()) + labs(x="Precio (en Euros)")
 # Se "normalizan" más los datos con Log(Precio_euros)
-h2=df%>%ggplot()+geom_histogram(aes(x=log(precio_euros))) +theme_bw()  + labs(title="Histograma del Logaritmo del Precio",x="Log(Precio)")
+h2=df%>%ggplot()+geom_histogram(aes(x=log(precio_euros))) +theme_bw()+ theme (axis.title.y = element_blank()) + labs(x="Log(Precio)")
 
-h1+h2
+h1/h2
 
 ```
 
 
-```{r}
 
+```{r echo=FALSE, warning=FALSE, results='asis',fig.cap="Dispersión de Precio (en euros) por Distrito", results='asis'}
+
+ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos))+labs(y="Log(Precio)",x="Distritos",fill="Distritos") +theme_bw()  + theme (axis.title.x = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) 
+
+```
+
+
+```{r echo=FALSE, warning==FALSE,fig.cap="Dispersión de Precio (en euros) según la puntuación, por tipo de alojamiento", results='asis'}
+
+ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)') +facet_wrap(~tipo_habitacion) +theme_bw()
+
+ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)')  +theme_bw()
+
+
+```
+
+
+```{r echo=FALSE, eval=FALSE}
+
+#ELIMINAR?
 
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
@@ -285,7 +293,7 @@ h1+h2
 
 #p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-#ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + xlab("Puntuación")+ ylab('Precio (en Euros)')
+
 
 
 p1=ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning)) + theme (axis.title.y = element_blank()) + xlab("Aire Acondicionado")
@@ -302,14 +310,9 @@ p8=ggplot(data=df_final) + geom_boxplot(aes(x=check_in_24_hs,y=precio_euros,fill
 #p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) + xlab("Distritos")
+p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) + xlab("Distritos")
 
 ##(p1+p3+p4+p5+p7+p8)/p6
-
-p6
-
-
-
 
 
 ```
@@ -322,7 +325,6 @@ Además podríamos decir que existe diferencia entre el precio de los apartament
 # Metodología
 
 ## Selección de variables
-
 
 
 k=ncol(airbnb_barcelona)-1
@@ -363,7 +365,7 @@ En las siguientes lineas del script se pusieron a prueba cada uno de los supuest
 
 ### Multicolinealidad
 
-```{r}
+```{r echo=FALSE,results='asis'}
 library(car)
 
 X <- model.matrix(mod0)
@@ -372,7 +374,16 @@ eigen_result <- eigen(XX) #valores y vectores propios de XX
 
 # Obtener los valores propios
 valores_propios <- eigen_result$values
-print(valores_propios)
+
+#data.frame(Valores_Propios=valores_propios) 
+
+#knitr::kable(valores_propios,col.names = "Valores Propios") %>%print()
+##print(valores_propios) 
+
+
+```
+
+```{r}
 
 # numero de condicion
 kA <- sqrt(max(valores_propios)/min(valores_propios))
@@ -380,12 +391,11 @@ print(kA)
 
 vif(mod0)
 
-#el número de condición es muy alto, lo que nos dice que hay problemas de multicolinealidad, mirando los VIF de cada una de las variables todos son mayores a 1 pero ninguno mayor a 5, por lo cual no se podría determinar cual es la variable causante de la multicolinealidad.
-#importante recordar que no estamos estimando el precio en euros, sino que el logaritmo del precio en euros
-
 ## VER SCRIPTS DE CLASE
 
 ```
+El número de condición es muy alto, lo que nos dice que hay problemas de multicolinealidad, mirando los VIF de cada una de las variables todos son mayores a 1 pero ninguno mayor a 5, por lo cual no se podría determinar cual es la variable causante de la multicolinealidad.
+importante recordar que no estamos estimando el precio en euros, sino que el logaritmo del precio en euros
 
 
 ### Linelidad #RESOLVER, EL SUPUESTO SE VERIFICA ASÍ??
