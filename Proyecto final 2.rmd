@@ -108,8 +108,6 @@ Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con 
 
 
 ```{r}
-df%>%vis_miss()
-
 df= df %>% select(barrio,
                   tipo_habitacion,
                   personas,
@@ -135,7 +133,7 @@ df= df %>% select(barrio,
                                         )
             
 
-df%>%vis_miss()
+
 
 distritos<-character(length(nrow(df)))
   
@@ -235,9 +233,11 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        Pets_allowed=as.factor(Pets_allowed),	
                        Patio_or_balcony=as.factor(Patio_or_balcony),	
                        check_in_24_hs=as.factor(check_in_24_hs),	
-                       grupo_habitacion=as.factor(ifelse(habitaciones>=0 & habitaciones<3,'Chica',ifelse(habitaciones>=3 & habitaciones<6,'Mediana','Grande'))),
-                       grupo_banios=as.factor(ifelse(banios>=0 & banios<2,'Pocos',ifelse(banios>=2 & banios<5,'Intermedio','Muchos')))
+                       grupo_habitacion=as.factor(ifelse(habitaciones>=0 & habitaciones<3,'Chica','Grande')),
+                       grupo_banios=as.factor(ifelse(banios>=0 & banios<3,'Pocos','Muchos'))
              )
+
+## CAMBIAR GRUPO_HABITACION
 
 df_final
 
@@ -275,9 +275,9 @@ ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=di
 
 ```{r echo=FALSE, warning==FALSE,fig.cap="Dispersión de Precio (en euros) según la puntuación, por tipo de alojamiento", results='asis'}
 
-ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)') +facet_wrap(~tipo_habitacion) +theme_bw()
+ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=log(precio_euros)),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)') +facet_wrap(~tipo_habitacion) +theme_bw()
 
-ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)')  +theme_bw()
+ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=log(precio_euros),col=tipo_habitacion),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)')  +theme_bw()
 
 
 ```
@@ -427,15 +427,16 @@ ggplot(df_final, aes(x = predichos , y = residuos)) +
 ```{r}
 
 #install.packages("skedastic")
-df_bp=data.frame(breusch_pagan(mod0))
+data.frame(breusch_pagan(mod0))
 
-knitr::kable(df_bp)%>%print()
+#knitr::kable(df_bp)%>%print()
 #buscamos NO rechazar H0, el p-valor es 1.11e-129, muy chico, por lo cual se rechaza H0, debemos intentar subir el p-valor.
 #H0 nos dice que los errores son homoscedasticos
 
 #hipotesis nula es que todos tienen la misma varianza, es decir, hay homoscedasticidad, la otra hipotesis es que hay al menos uno que tiene una varianza diferente a sigma cuadrado
 #rechazo H0, NO HAY HOMOSEDASTICIDAD, p valor muy chico.
 
+#RANDOMIZE o "Sanguche"
 
 ```
 
@@ -463,9 +464,12 @@ ggplot(data = df_final, aes(sample = residuos_int)) +
   ylab("Cuantiles empiricos")
 
 #DATOS FUERA DE LA BANDA. SE PUEDE VER QUE NO HAY NORMALIDAD.
-#Randomize
+
+#RESOLVER: PROBAR CON Randomize
 
 #NO FUNCIONA #RESOLVER
+shapiro.test(df_final$residuos_int)
+
 ks.test(df_final$residuos_int)
 
 ```
@@ -542,20 +546,34 @@ ggplot(df, aes(x = i, y = h_i)) +
 
 
 ```{r}
+
+df_2 %>% group_by(grupo_habitacion) %>% summarise(n())
+
 mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
 
 #para "vichar"
 Anova(mod1)
 summary(mod1)
 
+#distritos(Gracia)              0.1495579
+#exp(0.1495579)=1.161834
+
+#"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
+
+
+summary(mod0)$sigma
+summary(mod1)$sigma
+
+summary(mod0)$r.squared
+summary(mod1)$r.squared
+
+
+##  UNA VEZ DEFINIDO EL MODELO, PODEMOS HACER UN SPLIT DE DATOS 70/30 PARA ENTRENAR Y TESTEAR.
+
+
+
 # p-valor de grupo_habitación alto, ¿está relacionado con el grupo de referencia? ¿Habrá que sacar la variable?
 
-
-
-mod2= lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
-Anova(mod2)
-summary(mod2)
-# si sacamos la variable, el r2 no cambia.
 
 
 ```
@@ -588,7 +606,7 @@ summary(mod0)
 #CUAL ES LA LIBRERIA??
 #forward
 library(mixlm)
-modF <- forward(mod0, alpha = 0.05)
+modF <- forward(mod1, alpha = 0.05)
 length(coef(modF))  # parametros
 summary(modF)
 
