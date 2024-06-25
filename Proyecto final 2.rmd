@@ -274,6 +274,7 @@ Como parte de la estadística descriptiva se crearon gráficos donde se relacion
 ```{r, echo=FALSE,warning=FALSE}
 
 
+ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
 
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
@@ -310,13 +311,16 @@ p6
 
 ```
 
-#RESOLVER, QUE GRÁFICOS VAMOS A HACER???: De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
+#RESOLVER, QUE GRÁFICOS VAMOS A HACER???: 
+De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
 Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
 
 
 # Metodología
 
 ## Selección de variables
+
+
 
 k=ncol(airbnb_barcelona)-1
 modelos_posibles=2**k-1
@@ -525,10 +529,6 @@ summary(mod2)
 
 
 
-```{r}
-
-```
-
 
 
 A partir de la etapa del diagnóstico se llegó a diferentes conclusiones sobre que hay que cambiar en el modelo para que este sea lo mejor posible, se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 2792.348, es decir, hay problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
@@ -591,3 +591,5 @@ summaryHH(modS)
 # Conclusiones
 
 # Bibliografía
+
+
