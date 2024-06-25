@@ -300,11 +300,12 @@ p8=ggplot(data=df_final) + geom_boxplot(aes(x=check_in_24_hs,y=precio_euros,fill
 #p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 #p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
-p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
+ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) + xlab("Distritos")
 
 ##(p1+p3+p4+p5+p7+p8)/p6
 
 p6
+
 
 
 
@@ -478,9 +479,6 @@ df <- data.frame(i = 1:nrow(df_final),
                  D_i = D_i)
 
 
-
-n=nrow(df_final)
-
 ggplot(df, aes(x = i, y = D_i)) +
   geom_point() +
   geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
@@ -495,6 +493,7 @@ a = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
 ## SACAR LOS ATIPICOS CON ESTE "-"
 
+df_final[a,]
 
 df_2=df_final[-a,] ##DATA FRAME FINAL SIN ATIPICOS.
 
