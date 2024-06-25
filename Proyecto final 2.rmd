@@ -110,8 +110,6 @@ Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con 
 
 
 ```{r}
-
-
 df%>%vis_miss()
 
 df= df %>% select(barrio,
@@ -140,18 +138,6 @@ df= df %>% select(barrio,
             
 
 df%>%vis_miss()
-
-#HAY DOS HISTOGRAMAS, CON CUAL NOS QUEDAMOS??? #RESOLVER
-
-df%>%ggplot()+geom_histogram(aes(x=precio_euros))  
-# Se "normalizan" más los datos con Log(Precio_euros)
-df%>%ggplot()+geom_histogram(aes(x=log(precio_euros)))
-
-```
-
-
-
-```{r}
 
 distritos<-character(length(nrow(df)))
   
@@ -238,12 +224,6 @@ for (i in seq_along(df$barrio)) {
 }
 df$distritos <- distritos
 
-```
-
-
-
-```{r}
-
 #Pasamos las variables a factor y definimos dos nuevas variables "grupo_habitacion" y "grupo_banios" que "achican" las categorías de habitación y baños respectivamente.
 
 df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
@@ -267,14 +247,37 @@ df_final
 ```
 
 
+
+
+
 # Análisis exploratorio
 
 Como parte de la estadística descriptiva se crearon gráficos donde se relacionan cada una de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
 
-```{r, echo=FALSE,warning=FALSE}
+```{r, results='asis',fig.cap="Dispersión de Precio (en euros) por localidad"}
 
 
-ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank()) + xlab("Distritos")
+ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos))+theme_bw()  + theme (axis.title.y = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) + xlab("Distritos")
+
+```
+
+
+
+```{r, results='asis',fig.cap="Histograma de la variable de respuesta Precio" }
+
+#HAY DOS HISTOGRAMAS, CON CUAL NOS QUEDAMOS??? #RESOLVER
+
+h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + labs(title="Histograma del Precio",x="Precio (en Euros)")
+# Se "normalizan" más los datos con Log(Precio_euros)
+h2=df%>%ggplot()+geom_histogram(aes(x=log(precio_euros))) +theme_bw()  + labs(title="Histograma del Logaritmo del Precio",x="Log(Precio)")
+
+h1+h2
+
+```
+
+
+```{r}
+
 
 #ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
 
@@ -283,7 +286,6 @@ ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=di
 #p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
 
 #ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=precio_euros)) + xlab("Puntuación")+ ylab('Precio (en Euros)')
-
 
 
 p1=ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning)) + theme (axis.title.y = element_blank()) + xlab("Aire Acondicionado")
