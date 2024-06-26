@@ -83,11 +83,8 @@ library(faraway)
 ```{r}
 df = read_excel(here("airbnb_barcelona_v2.xlsx"))
 
-head(df)
 summary(df)
 ```
-
-
 
 ## Los datos
 
@@ -107,7 +104,7 @@ Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con 
 
 
 
-```{r}
+```{r, echo=FALSE}
 df= df %>% select(barrio,
                   tipo_habitacion,
                   personas,
@@ -237,14 +234,10 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        grupo_banios=as.factor(ifelse(banios>=0 & banios<3,'Pocos','Muchos'))
              )
 
-## CAMBIAR GRUPO_HABITACION
 
 df_final
 
-
 ```
-
-
 
 
 
@@ -254,14 +247,13 @@ Como parte de la estadística descriptiva se crearon gráficos donde se relacion
 
 ```{r, echo=FALSE,results='asis',fig.cap="Histograma de la variable de respuesta Precio", results='asis'}
 
-#HAY DOS HISTOGRAMAS, CON CUAL NOS QUEDAMOS??? #RESOLVER
-
 h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + theme (axis.title.y = element_blank()) + labs(x="Precio (en Euros)")
 # Se "normalizan" más los datos con Log(Precio_euros)
 h2=df%>%ggplot()+geom_histogram(aes(x=log(precio_euros))) +theme_bw()+ theme (axis.title.y = element_blank()) + labs(x="Log(Precio)")
 
 h1/h2
 
+#RESOLVER: ¿CÓMO JUSTIFICAMOS EL CAMBIO A LOG(PRECIO)?
 ```
 
 
@@ -270,6 +262,8 @@ h1/h2
 
 ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos))+labs(y="Log(Precio)",x="Distritos",fill="Distritos") +theme_bw()  + theme (axis.title.x = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) 
 
+#RESOLVER: COMENTAR EN EL INFORME ALGO DE LAS DIFERENCIAS DE PRECIO ENTRE DISTRITOS
+
 ```
 
 
@@ -277,55 +271,17 @@ ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=di
 
 ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=log(precio_euros)),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)') +facet_wrap(~tipo_habitacion) +theme_bw()
 
-ggplot(data=df_final) + geom_point(aes(x=puntuacion,y=log(precio_euros),col=tipo_habitacion),size=1) + xlab("Puntuación")+ ylab('Precio (en Euros)')  +theme_bw()
+ggplot(data=df_final,aes(x=puntuacion,y=log(precio_euros),col=tipo_habitacion)) + geom_point(size=1) + xlab("Puntuación")+ ylab('Log(Precio)')  +theme_bw() + geom_smooth(method = 'lm',se = FALSE)
 
 
 ```
-
-
-```{r echo=FALSE, eval=FALSE}
-
-#ELIMINAR?
-
-#ggplot(data=df_final) + geom_boxplot(aes(x=tipo_habitacion,y=precio_euros,fill=tipo_habitacion)) + ylab('Precio (en Euros)')+ xlab("Tipo de Habitación")
-
-#p2=ggplot(data=df_final) + geom_point(aes(x=personas,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
-
-#p3=ggplot(data=df_final) + geom_point(aes(x=estancia_min,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
-
-
-
-
-p1=ggplot(data=df_final) + geom_boxplot(aes(x=Air_conditioning,y=precio_euros,fill=Air_conditioning)) + theme (axis.title.y = element_blank()) + xlab("Aire Acondicionado")
-
-p3=ggplot(data=df_final) + geom_boxplot(aes(x=Wifi,y=precio_euros,fill=Wifi)) + theme (axis.title.y = element_blank()) + xlab("WiFi")
-p4=ggplot(data=df_final) + geom_boxplot(aes(x=Breakfast,y=precio_euros,fill=Breakfast)) + theme (axis.title.y = element_blank()) + xlab("Desayuno")
-p5=ggplot(data=df_final) + geom_boxplot(aes(x=TV,y=precio_euros,fill=TV)) + theme (axis.title.y = element_blank()) + xlab("Televisión")
-
-p7=ggplot(data=df_final) + geom_boxplot(aes(x=Pets_allowed,y=precio_euros,fill=Pets_allowed)) + theme (axis.title.y = element_blank()) + xlab("Admite Mascotas")
-p8=ggplot(data=df_final) + geom_boxplot(aes(x=check_in_24_hs,y=precio_euros,fill=check_in_24_hs)) + theme (axis.title.y = element_blank()) + xlab("Check-In 24hs")
-
-
-#p3=ggplot(data=df_final) + geom_point(aes(x=cuello,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
-#p4=ggplot(data=df_final) + geom_point(aes(x=pecho,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
-#p5=ggplot(data=df_final) + geom_point(aes(x=abdomen,y=precio_euros),size=0.25) + theme (axis.title.y = element_blank())
-
-p6=ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos)) + theme (axis.title.y = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) + xlab("Distritos")
-
-##(p1+p3+p4+p5+p7+p8)/p6
-
-
-```
-
-#RESOLVER, QUE GRÁFICOS VAMOS A HACER???: 
-De los anteriores gráficos lo primero que se puede apreciar es que hay muchos datos atípicos, situación en la que nos enfocaremos con profundidad más adelante.
-Además podríamos decir que existe diferencia entre el precio de los apartamentos dependiendo de si cuentan o no con aire acondicionado, pero adicional de lo ya mencionado no se puede interpretar con seguridad mucho más debido a que muchas de las cajas se solapan entre si. Esto se puede contemplar bien en el último grafico, el cual toma como variable explicativa a los distritos, en este, todas las cajas tienen aproximadamente las mismas alturas además de las misma mediana, lo que si se puede observar que cambia distrito a distrito es la varianza, siendo la del distrito Sant Andreu la menor de todas.
+#TERMINAR
+No hay relación entre precio y puntuación. Los apartamentos enteros tienden a tener mayor precio.
 
 
 # Metodología
 
 ## Selección de variables
-
 
 k=ncol(airbnb_barcelona)-1
 modelos_posibles=2**k-1
@@ -338,13 +294,11 @@ llegar al mejor modelo
 # Definimos la primer versión del modelo
 
 mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_final)
-
 #para "vichar"
 Anova(mod0)
 summary(mod0)
 
 ```
-
 
 ## Diagnóstico
 
@@ -386,6 +340,9 @@ kA <- sqrt(max(valores_propios)/min(valores_propios))
 print(kA)
 
 ```
+#TERMINAR
+
+A partir de la etapa del diagnóstico se llegó a diferentes conclusiones sobre que hay que cambiar en el modelo para que este sea lo mejor posible, se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 2792.348, es decir, hay problemas de multicolinealidad. 
 
 El número de condición es muy alto, lo que nos dice que hay problemas de multicolinealidad.
 
@@ -397,13 +354,13 @@ vif(mod0)
 ## VER SCRIPTS DE CLASE
 
 ```
-mirando los VIF de cada una de las variables todos son mayores a 1 pero ninguno mayor a 5, por lo cual no se podría determinar cual es la variable causante de la multicolinealidad.
-importante recordar que no estamos estimando el precio en euros, sino que el logaritmo del precio en euros
 
+Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
 
 ### Linelidad 
 
-#RESOLVER, EL SUPUESTO SE VERIFICA ASÍ??
+
+Luego se siguió con el supuesto de linelidad, donde se realizó el grafico entre residuos y predichos. 
 
 ```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
 res_ext<-rstudent(mod0) #residuos
@@ -418,6 +375,22 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
 #en el gráfico se puede ver que la mayoría de los puntos se encuentran "agrupados", (Eso cuenta como un patrón?) #RESOLVER
+
+```
+
+
+
+
+```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
+
+#PUNTO 6 TALLER
+#distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock
+
+#QUE SIGNIFICAN ESTOS GRÁFICOS? ES PARA EL SUPUESTO DE LINEALIDAD? ES NECESARIO HACERLOS???#RESOLVER
+crPlot(mod0,"distritos")
+crPlot(mod0,"tipo_habitacion")
+crPlot(mod0,"grupo_habitacion")
+crPlot(mod0,"estancia_min")
 
 ```
 
@@ -440,57 +413,54 @@ data.frame(breusch_pagan(mod0))
 
 ```
 
+
+
+Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el que se presentó, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. Subir dicho p-valor fue unos de los cambios que se realizó en el modelo.
+
 ### Normalidad
 
 ```{r}
 
 # histogramas
-hist(rstudent(mod0)) #OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas
-#nos gustaría ver que tenga la forma de una campana simetrica, en este caso tiene más o menos la forma, importante tomar en cuenta que el tamaño de los bins influye muchísimo en la forma del histograma.
+ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank()) 
 
-#Q-Q plot
-qqPlot(res_ext)
-plot(density(df_final$residuos))
-#los puntos no están sobre la recta, nos hay normalidad
+#REVISAR: VER SI SE PUEDE AGREGAR CAMPANA.
+
 ```
 
-```{r, eval=FALSE}
+OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas nos gustaría ver que tenga la forma de una campana simetrica, en este caso tiene más o menos la forma, importante tomar en cuenta que el tamaño de los bins influye muchísimo en la forma del histograma.
 
-ggplot(data = df_final, aes(sample = residuos_int)) +
+```{r}
+#REVISAR: PORNER EN FORMATO LINDO EL GRÁFICO
+
+ggplot(data = df_final, aes(sample = res_ext)) +
   stat_qq_band(fill = 2) +
   stat_qq_line(col = 2) +
   stat_qq_point() +
   xlab("Cuantiles teoricos")+
   ylab("Cuantiles empiricos")
 
-#DATOS FUERA DE LA BANDA. SE PUEDE VER QUE NO HAY NORMALIDAD.
-
-#RESOLVER: PROBAR CON Randomize
-
-#NO FUNCIONA #RESOLVER
-shapiro.test(df_final$residuos_int)
-
-ks.test(df_final$residuos_int)
 
 ```
 
+Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica, en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov 
 
 
-```{r, echo=FALSE}
-#PUNTO 6 TALLER
-#distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock
 
-#QUE SIGNIFICAN ESTOS GRÁFICOS? ES PARA EL SUPUESTO DE LINEALIDAD? ES NECESARIO HACERLOS???#RESOLVER
-crPlot(mod0,"distritos")
-crPlot(mod0,"tipo_habitacion")
-crPlot(mod0,"grupo_habitacion")
-crPlot(mod0,"estancia_min")
+```{r}
 
+ks.test(df_final$residuos_int, 'pnorm')
+# QUEREMOS PVALOR ALTO PARA NO RECHAZAR 
 
+#RESOLVER: AGREGAR COMENTARIO DE ESTA PRUEBA.
 ```
+
+
 
 
 ### Atípicos
+
+Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en este modelo las observaciones son muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/500, en ese punto las observaciones atípicas terminan siendo las más diferentes.
 
 ```{r, echo=FALSE}
 
@@ -505,7 +475,6 @@ df <- data.frame(i = 1:nrow(df_final),
                  h_i = h_i,
                  D_i = D_i)
 
-#RESOLVER: ¿Este gráfico está asociado al id de cada observación correctamente?
 
 ggplot(df, aes(x = i, y = D_i)) +
   geom_point() +
@@ -517,37 +486,25 @@ ggplot(df, aes(x = i, y = D_i)) +
 ```
 
 
+
 ```{r, echo=FALSE}
 
+id_atipico = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
-a = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
-
-# valor de 50 a "gusto"
-
-## SACAR LOS ATIPICOS CON ESTE "-"
-
-df_final[a,]
-
-df_2=df_final[-a,] ##DATA FRAME FINAL SIN ATIPICOS.
-
-
-# RESOLVER: DEFINIR SI LO DEJAMOS
-# leverage
-ggplot(df, aes(x = i, y = h_i)) +
-  geom_point() +
-  geom_segment(aes(x = i, xend = i, y = 0, yend = h_i)) +
-  xlab('') +
-  ylab(expression(h[i])) +
-  geom_abline(slope = 0, intercept = 2*5/50, col = 2, linetype = 'dashed')
-
-
+df_final[id_atipico,]
+#MUESTRA DE LOS ATIPICOS. DEJAR SOLO VARIABLES "MAS DISRUPTIVAS"
 
 ```
 
 
+## Correción del modelo
+
+A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
+
 ```{r}
 
-df_2 %>% group_by(grupo_habitacion) %>% summarise(n())
+df_2=df_final[-id_atipico,]
+
 
 mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
 
@@ -560,7 +517,6 @@ summary(mod1)
 
 #"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
 
-
 summary(mod0)$sigma
 summary(mod1)$sigma
 
@@ -570,8 +526,6 @@ summary(mod1)$r.squared
 
 ##  UNA VEZ DEFINIDO EL MODELO, PODEMOS HACER UN SPLIT DE DATOS 70/30 PARA ENTRENAR Y TESTEAR.
 
-
-
 # p-valor de grupo_habitación alto, ¿está relacionado con el grupo de referencia? ¿Habrá que sacar la variable?
 
 
@@ -579,63 +533,15 @@ summary(mod1)$r.squared
 ```
 
 
-
-
-
-A partir de la etapa del diagnóstico se llegó a diferentes conclusiones sobre que hay que cambiar en el modelo para que este sea lo mejor posible, se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 2792.348, es decir, hay problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
-
-Luego se siguió con el supuesto de linelidad, donde se realizó el grafico entre residuos y predichos. #RESOLVER
-
-Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el que se presentó, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. Subir dicho p-valor fue unos de los cambios que se realizó en el modelo.
-
-Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica, en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov #RESOLVER
-
-Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en este modelo las observaciones son muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/300, en ese punto las observaciones atípicas terminan siendo las más diferentes.
-
-A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
-
-
-  
-
-```{r ,eval=FALSE}
-
-
-coef(mod0)
-summary(mod0)
-
-#CUAL ES LA LIBRERIA??
-#forward
-library(mixlm)
-modF <- forward(mod1, alpha = 0.05)
-length(coef(modF))  # parametros
-summary(modF)
-
-# backward
-modB <- backward(mod0, alpha = 0.01)
-length(coef(modB))  # parametros
-summary(modB)
-
-# stepwise
-modS <- stepWise(mod0, alpha.enter = 0.04, alpha.remove=0.05)
-length(coef(modS))  # parametros
-summary(modS)
-
-#COMPARAMOS POR AIC, BIC O R2 AJUSTADO PARA VER CUAL ES EL MEJOR
-
-#que paquete se usaba para ver la tabla con AIC BIC
-install.packages("HH")
-library(HH)
-summaryHH(modF)
-summaryHH(modB)
-
-help(anova)
-summaryHH(modS)
-```
-
 # Resultados
+
+ACÁ IRÍA LAS PREDICCIONES Y LAS INTERPRETACIONES DEL MODELO
 
 # Conclusiones
 
+ACÁ IRÍA SI EL MODELO SIRVIÓ O NO, SI "RESPONDE" O NO LA CUESTIÓN PLANTEADA EN LA INTRO
+
 # Bibliografía
 
+CAPAZ PONER LAS REFERENCIAS DE LAS DIAPO DEL PROFE
 
