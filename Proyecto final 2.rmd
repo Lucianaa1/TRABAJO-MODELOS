@@ -390,7 +390,6 @@ crPlot(mod0,"estancia_min")
 ### Homoscedasticidad
 
 ```{r}
-
 data.frame(breusch_pagan(mod0))
 
 ```
