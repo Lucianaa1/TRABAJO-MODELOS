@@ -288,13 +288,7 @@ En el gráfico - se muestra a partir de un gráfico de dispersión la relación 
 
 ## Selección de variables
 
-A partir de las diferentes combinaciones de las variables explicativas se puede llegar a una gran cantidad de modelos que busquen predecir el precio, cada uno de estos llevará a una predicción diferente de el mismo. Uno de los problemas centrales es encontrar cual de todos estos modelos cumple mejor su objetivo. En este proyecto finamlente se decidió que 15 de - variables explicativas formaran parte del modelo incial.
-
-(((k=ncol(airbnb_barcelona)-1
-modelos_posibles=2**k-1
-
-hay 16383 modelos posibles, vamos a aplicar los procedimientos de hipotesis para
-llegar al mejor modelo)))
+A partir de las diferentes combinaciones de las variables explicativas se puede llegar a una gran cantidad de modelos que busquen predecir el precio, cada uno de estos llevará a una predicción diferente de el mismo. Uno de los problemas centrales es encontrar cual de todos estos modelos cumple mejor su objetivo. En este proyecto finalmente se decidió que 15 del total variables explicativas formaran parte del modelo incial.
 
 
 ```{r }
@@ -348,12 +342,11 @@ vif(mod0)
 
 Se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 1711.793, es decir, existían problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
 
-### Linelidad 
+### Linealidad 
 
-
-Luego se siguió con el supuesto de linelidad, donde se realizó el grafico entre residuos y predichos. 
 
 ```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
+
 res_ext<-rstudent(mod0) #residuos
 res_int<-rstandard(mod0) #residuos
 yhat<-fitted(mod0) #ygorro
@@ -365,7 +358,9 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
-#en el gráfico se puede ver que la mayoría de los puntos se encuentran "agrupados", (Eso cuenta como un patrón?) #RESOLVER
+
+
+Luego se siguió con el supuesto de linealidad, donde se realizó el grafico entre residuos y predichos. En dicho gráfico se puede observar que no existe ningun patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad. Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
 
 ```
 
@@ -389,14 +384,12 @@ crPlot(mod0,"estancia_min")
 
 ### Homoscedasticidad
 
+Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el presente, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. 
+
 ```{r}
 data.frame(breusch_pagan(mod0))
 
 ```
-
-
-
-Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el que se presentó, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. Subir dicho p-valor fue unos de los cambios que se realizó en el modelo.
 
 ### Normalidad
 
@@ -407,8 +400,6 @@ ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Stu
 #RESOLVER: VER SI SE PUEDE AGREGAR CAMPANA.
 
 ```
-
-OJO es sensible al tamaño de las barras (bins) por lo que se puede interpretar de diferentes formas nos gustaría ver que tenga la forma de una campana simetrica, en este caso tiene más o menos la forma, importante tomar en cuenta que el tamaño de los bins influye muchísimo en la forma del histograma.
 
 ```{r}
 #RESOLVER: PORNER EN FORMATO LINDO EL GRÁFICO
@@ -422,25 +413,18 @@ ggplot(data = df_final, aes(sample = res_ext)) +
 
 
 ```
-
-Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica, en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov 
-
-
-
 ```{r}
 
 ks.test(df_final$residuos_int, 'pnorm')
-# QUEREMOS PVALOR ALTO PARA NO RECHAZAR 
 
-#RESOLVER: AGREGAR COMENTARIO DE ESTA PRUEBA.
 ```
-
-
+Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica (hay que resaltar que la forma del histograma está muy influenciada por el tamaño de los bins), en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov. En esta prueba se obtuvo un p-valor muy chico el cual llevó a que se rechace H0, esto concluyó que el supuesto de normalidad no se cumplió. 
+Sin embargo, obtener el cumplimiento de este supuesto no fue de mucha importancia debido a la robustez que proporciona el Teorema Central del Límite cuando se trabaja con muchas observaciones.
 
 
 ### Atípicos
 
-Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en este modelo las observaciones son muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/500, en ese punto las observaciones atípicas terminan siendo las más diferentes.
+Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en el modelo las observaciones eran muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/500, en ese punto las observaciones atípicas terminan siendo las más diferentes.
 
 ```{r, echo=FALSE}
 
@@ -468,7 +452,7 @@ ggplot(df, aes(x = i, y = D_i)) +
 id_atipico = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
 df_final[id_atipico,]
-#MUESTRA DE LOS ATIPICOS. DEJAR SOLO VARIABLES "MAS DISRUPTIVAS"
+
 
 ```
 
@@ -478,6 +462,7 @@ df_final[id_atipico,]
 A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
 
 ```{r}
+Se comenzó eliminando los datos atípicos y creando un nuevo modelo sin tomarlos en cuenta.
 
 df_2=df_final[-id_atipico,]
 
@@ -532,7 +517,7 @@ den=sum((df_test$precio_euros-y_prom)**2)
 
 summary(mod1)
 ```
-
+NO LOGRAMOS QUE EL SUPUESTO DE HOMOSCEDASTICIDAD SE CUMPLIERA
 
 ACÁ IRÍA LAS PREDICCIONES Y LAS INTERPRETACIONES DEL MODELO
 
