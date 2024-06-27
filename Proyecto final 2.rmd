@@ -311,9 +311,9 @@ Multicolinealidad: en está prueba se busca que ninguna de las columnas de la ma
 
 Linealidad: este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas, si en el modelo no hay linealidad se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los Yˆ y εˆ, en el cual se busca no encontrar patrones.
 
-Homoscedasticidad: se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante,se va a entender esto como que la varianza no depende de ninguna de las variables explicativas. Esta prueba se suele ver mediante gráficos que relacionan cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde se busca no rechazar la hipótesis nula. #EL PROFE DIJO QUE AL SER TANTAS VARIABLES (TODO) SIEMPRE VA A SER SIGNIFICATIVO, PODEMOS AGREGARLO POR ESCRITO
+Homoscedasticidad: se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante,se va a entender esto como que la varianza no depende de ninguna de las variables explicativas. Esta prueba se suele ver mediante gráficos que relacionan cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde se busca no rechazar la hipótesis nula. 
 
-Normalidad: se refiere a que los residuos deben tener una distribución normal, este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones. #AL SER TANTAS OBSERVACIONES SON "ROBUSTAS" A LA NORMALIDAD (ALGO ASÍ DIJO EL PROFE)
+Normalidad: se refiere a que los residuos deben tener una distribución normal, este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones.
 
 En las siguientes lineas del script se pusieron a prueba cada uno de los supuestos antes mencionados.
 
@@ -523,13 +523,17 @@ ACÁ IRÍA LAS PREDICCIONES Y LAS INTERPRETACIONES DEL MODELO
 
 # Conclusiones
 
-Luego de realizadas las predicciones, se logró concluir que el modelo es funcional según las pruebas realizadas aunque tal vez creemos que se podría seguir mejorando ya sea agregando nuevas variables que puedan ser relevantes y que no estén en los datos iniciales. 
+(((Luego de realizadas las predicciones, se logró concluir que el modelo es funcional según las pruebas realizadas aunque tal vez creemos que se podría seguir mejorando ya sea agregando nuevas variables que puedan ser relevantes y que no estén en los datos iniciales.)))
 
+Luego de realizadas las pruebas y predicciones se logró concluir que el modelo si es funcional y cumple con su objetivo, sin embargo, hay varios supuestos que no se cumplen lo cual lleva a pensar que es un modelo que todavía puede ser mejorado, ya sea agregando variables que sean relevantes que no estuvieran incluidas en los datos iniciales o trabajando de diferente forma con las presentes.
 
-
-ACÁ IRÍA SI EL MODELO SIRVIÓ O NO, SI "RESPONDE" O NO LA CUESTIÓN PLANTEADA EN LA INTRO
+“Todos los modelos son incorrectos, pero algunos son útiles” George Edward Pelham Box
 
 # Bibliografía
 
-CAPAZ PONER LAS REFERENCIAS DE LAS DIAPO DEL PROFE
+Carmona, Francesc (2003). Modelos Lineales (notas de curso). Departament d’Estad´ıstica.
+Farraway, Julian (2014). Linear Models with R, second edition. Chapman Hall/CRC.
+Rencher, Alvin y Bruce Schaalje (2008). Linear Models in Statistics, second edition. John Wiley Sons, Inc.
+Peña, Daniel (2010). Regresi´on y Dise˜no de Experimentos. Alianza Editoria
+https://es.wikipedia.org/wiki/Distritos_de_Barcelona
 
