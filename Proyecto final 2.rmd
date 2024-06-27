@@ -219,7 +219,7 @@ df$distritos <- distritos
 
 #Pasamos las variables a factor y definimos dos nuevas variables "grupo_habitacion" y "grupo_banios" que "achican" las categorías de habitación y baños respectivamente.
 
-df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
+df= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        camas=as.factor(camas),
                        distritos=as.factor(distritos),
                        Wifi=as.factor(Wifi),
@@ -232,10 +232,17 @@ df_final= df%>% mutate(tipo_habitacion=as.factor(tipo_habitacion),
                        check_in_24_hs=as.factor(check_in_24_hs),	
                        grupo_habitacion=as.factor(ifelse(habitaciones>=0 & habitaciones<3,'Chica','Grande')),
                        grupo_banios=as.factor(ifelse(banios>=0 & banios<3,'Pocos','Muchos'))
+                       
              )
 
+set.seed(123)
 
-df_final
+n = nrow(df)
+train_indices = sample(seq_len(n), size = round(0.7 * n))
+
+df_final = df[train_indices, ]
+df_test  = df[-train_indices, ]
+
 
 ```
 
