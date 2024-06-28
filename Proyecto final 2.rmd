@@ -48,7 +48,7 @@ Licenciatura en Estadística
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,fig.pos = 'H')
 ```
 
 \newpage 
@@ -76,13 +76,8 @@ library(car)
 library(qqplotr)
 library(skedastic)
 library(faraway)
-```
-
-
-```{r}
-df = read_excel(here("airbnb_barcelona_v2.xlsx"))
-
-summary(df)
+library(knitr)
+library(kableExtra)
 ```
 
 ## Los datos
@@ -104,8 +99,11 @@ Por último se decicdió trabajar con la transformación logaritmica de la varia
 Finalizada la limpieza y organización de datos se pudo comenzar a trabajar con ellos. 
 
 
+\newpage 
 
-```{r, echo=FALSE}
+```{r warning=FALSE,echo=FALSE,tab.cap="Descripción de las variables utilizadas en el informe",fig.align='center', results = 'asis'}
+df = read_excel(here("airbnb_barcelona_v2.xlsx"))
+
 df= df %>% select(barrio,
                   tipo_habitacion,
                   personas,
@@ -244,15 +242,49 @@ df_final = df[train_indices, ]
 df_test  = df[-train_indices, ]
 
 
+df_table=df %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion)
+
+
+# Convertir el resumen a data frame para mejor manejo
+resumen_df <- as.data.frame.matrix(summary(df_table))
+
+
+
+#resumen_df[,-2] %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion,precio_euros,Wifi,Air_conditioning)
+
+
+#knitr::kable(resumen_df) %>% print()
+# Crear una tabla bonita con kable
+kable(resumen_df, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+```{r warning=FALSE, echo=FALSE,tab.cap="Descripción de las variables utilizadas en el informe",fig.align='center', results = 'asis'}
+
+df_table2=df %>% select(precio_euros,Wifi,Air_conditioning)
+
+resumen_df2 <- as.data.frame.matrix(summary(df_table2))
+
+
+
+#resumen_df[,-2] %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion,precio_euros,Wifi,Air_conditioning)
+
+
+#knitr::kable(resumen_df) %>% print()
+# Crear una tabla bonita con kable
+kable(resumen_df2, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+
 ```
 
 
+\newpage
 
 # Análisis exploratorio
 
 Como parte de la estadística descriptiva se crearon gráficos donde se relacionan algunas de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
 
-```{r, echo=FALSE,results='asis',fig.cap="Histograma de la variable de respuesta Precio", results='asis'}
+```{r message=FALSE,warning=FALSE,echo=FALSE,fig.cap="Histograma de la variable de respuesta Precio",results='asis', fig.align='center'}
 
 h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + theme (axis.title.y = element_blank()) + labs(x="Precio (en Euros)")
 # Se "normalizan" más los datos con Log(Precio_euros)
@@ -264,25 +296,24 @@ h1/h2
 
 
 
-```{r echo=FALSE, warning=FALSE, results='asis',fig.cap="Dispersión de Precio (en euros) por Distrito", results='asis'}
+```{r message=FALSE,echo=FALSE, warning=FALSE,fig.cap="Dispersión de Precio (en euros) por Distrito",results='asis', fig.align='center'}
 
 ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=distritos))+labs(y="Log(Precio)",x="Distritos",fill="Distritos") +theme_bw()  + theme (axis.title.x = element_blank(),axis.text.x = element_text(angle = 45,vjust = 0.5)) 
-
-
 
 ```
 
 En el presente gráfico se puede observar la distribución de los datos y la relación entre los distritos y log(Precio). La mayoría de las cajas se encuentran superpuestas entre si, por lo que no se podría afirmar cual es el distrito que lleva a apartamentos con un log(Precio) más alto, pero si se pueden interpretar algunas diferencias entre los distritos, como que los apartamentos del distrito L'Eixample tienen un log(Precio) mayor que el distrito de Nou Barris. También se resalta la presencia de observaciones atípicas, que tienden a tener un log(Precio) más alto que las mayoría.
 
 
-```{r message=FALSE,echo=FALSE, warning=FALSE,fig.cap="Dispersión de Precio (en euros) según la puntuación, por tipo de alojamiento", results='asis'}
+```{r message=FALSE,echo=FALSE, warning=FALSE,fig.cap="Dispersión de Precio (en euros) según la puntuación, por tipo de alojamiento",results='asis', fig.align='center'}
 
 ggplot(data=df_final,aes(x=puntuacion,y=log(precio_euros),col=tipo_habitacion)) + geom_point(size=1) + xlab("Puntuación")+ ylab('Log(Precio)')  +theme_bw() + geom_smooth(method = 'lm',se = FALSE)
 
-
 ```
-En el gráfico - se muestra a partir de un gráfico de dispersión la relación entre las diferentes combinaciones de las variables explicativas, puntuación y tipo de habitación, con la variable respuesta, log(Precio). Lo primero a destacar es que los puntos tienden a estar acumulados en la parte derecha del gráfico, teniendo en su mayoría una puntuación mayor a 60, por lo que permite interpretar que no existe ninguna relación entre puntuación y log(precio). Por otro lado también se puede observar que existe una relación muy marcada entre el tipo de habitación y la variable respuesta, los apartamentos enteros se encuentran en la parte derecha y superior del gráfico, es decir, que están relacionados con precios más altos, mientras que el resto se encuentran en el extremo inferior.
 
+En el gráfico 3 se muestra a partir de un gráfico de dispersión la relación entre las diferentes combinaciones de las variables explicativas, puntuación y tipo de habitación, con la variable respuesta, log(Precio). Lo primero a destacar es que los puntos tienden a estar acumulados en la parte derecha del gráfico, teniendo en su mayoría una puntuación mayor a 60, por lo que permite interpretar que no existe ninguna relación entre puntuación y log(precio). Por otro lado también se puede observar que existe una relación muy marcada entre el tipo de habitación y la variable respuesta, los apartamentos enteros se encuentran en la parte derecha y superior del gráfico, es decir, que están relacionados con precios más altos, mientras que el resto se encuentran en el extremo inferior.
+
+\newpage
 
 # Metodología
 
@@ -321,7 +352,7 @@ En las siguientes lineas del script se pusieron a prueba cada uno de los supuest
 
 ### Multicolinealidad
 
-```{r echo=FALSE,results='asis'}
+```{r echo=FALSE,results='asis',tab.cap="Valores de la prueb VIF"}
 library(car)
 
 X <- model.matrix(mod0)
@@ -333,17 +364,24 @@ valores_propios <- eigen_result$values
 
 #Número de condición ¿LO MOSTRAMOS?
 kA <- sqrt(max(valores_propios)/min(valores_propios))
-print(kA)
+#print(kA)
 
-vif(mod0)
+vifvalues=data.frame(valor=vif(mod0))
+
+vifvalues=vifvalues%>%arrange(valor)
+
+kable(vifvalues, format = "latex", booktabs = TRUE,col.names = "Valor VIF") %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+
 #RESOLVER: PONER EN TABLA PARA EL INFORME
 
 ```
 
 Se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 1711.793, es decir, existían problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
 
-### Linealidad 
+\newpage
 
+### Linealidad 
 
 ```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
 
@@ -359,15 +397,12 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
 
+```
 
 Luego se siguió con el supuesto de linealidad, donde se realizó el grafico entre residuos y predichos. En dicho gráfico se puede observar que no existe ningun patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad. Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
 
-```
 
-
-
-
-```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
+```{r eval=FALSE,echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
 
 #PUNTO 6 TALLER
 #distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock
@@ -386,14 +421,16 @@ crPlot(mod0,"estancia_min")
 
 Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el presente, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. 
 
-```{r}
-data.frame(breusch_pagan(mod0))
+```{r results='asis',tab.cap="Resultados de la prueba de BREUSCH-PAGAN"}
 
+bp=data.frame(breusch_pagan(mod0))
+kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
 ```
 
 ### Normalidad
 
-```{r}
+```{r fig.cap="Histograma de los Residuos Studentizados",results='asis', fig.align='center'}
 
 ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank()) 
 
@@ -402,17 +439,18 @@ ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Stu
 ```
 
 ```{r}
-#RESOLVER: PORNER EN FORMATO LINDO EL GRÁFICO
 
 ggplot(data = df_final, aes(sample = res_ext)) +
   stat_qq_band(fill = 2) +
   stat_qq_line(col = 2) +
   stat_qq_point() +
   xlab("Cuantiles teoricos")+
-  ylab("Cuantiles empiricos")
+  ylab("Cuantiles empiricos")+theme_bw()
 
 
 ```
+
+
 ```{r}
 
 ks.test(df_final$residuos_int, 'pnorm')
@@ -441,7 +479,7 @@ ggplot(df, aes(x = i, y = D_i)) +
   geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
   xlab('') +
   ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed')
+  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed') +theme_bw()
 
 ```
 
@@ -451,19 +489,14 @@ ggplot(df, aes(x = i, y = D_i)) +
 
 id_atipico = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
-df_final[id_atipico,]
-
-
 ```
 
 
 ## Correción del modelo
 
-A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados.
+A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados. Se comenzó eliminando los datos atípicos y creando un nuevo modelo sin tomarlos en cuenta.
 
 ```{r}
-Se comenzó eliminando los datos atípicos y creando un nuevo modelo sin tomarlos en cuenta.
-
 df_2=df_final[-id_atipico,]
 
 
@@ -494,13 +527,85 @@ summary(mod1)$r.squared
 
 ```
 
+```{r}
+h_i <- influence(mod1)$hat
+D_i <- cooks.distance(mod1)
 
-# Resultados
+df_cook <- data.frame(i = 1:nrow(df_2),
+                 h_i = h_i,
+                 D_i = D_i)
+
+
+ggplot(df_cook, aes(x = i, y = D_i)) +
+  geom_point() +
+  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
+  xlab('') +
+  ylab(expression(D[i])) +
+  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed') +theme_bw()
+
+
+id_atipico_2 = df_cook %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
+
+df_2[-id_atipico_2,]
+
+```
+
+```{r}
+df_3=df_2[-id_atipico_2,]
+
+
+mod2 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_3)
+
+#para "vichar"
+Anova(mod2)
+summary(mod2)
+
+#distritos(Gracia)              0.1495579
+#exp(0.1495579)=1.161834
+
+#"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
+
+#RESOLVER: PONER EN TABLA
+summary(mod0)$sigma
+summary(mod1)$sigma
+summary(mod2)$sigma
+
+summary(mod0)$r.squared
+summary(mod1)$r.squared
+summary(mod2)$r.squared
+```
 
 
 ```{r}
+h_i <- influence(mod2)$hat
+D_i <- cooks.distance(mod2)
 
-df_test$predicciones = predict(mod1,newdata = df_test)
+df_cook_2 <- data.frame(i = 1:nrow(df_3),
+                 h_i = h_i,
+                 D_i = D_i)
+
+
+ggplot(df_cook_2, aes(x = i, y = D_i)) +
+  geom_point() +
+  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
+  xlab('') +
+  ylab(expression(D[i])) +
+  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed') +theme_bw()
+
+#no seguir
+
+```
+
+
+# Resultados
+
+NO LOGRAMOS QUE EL SUPUESTO DE HOMOSCEDASTICIDAD SE CUMPLIERA
+
+ACÁ IRÍA LAS PREDICCIONES Y LAS INTERPRETACIONES DEL MODELO
+
+```{r}
+
+df_test$predicciones = predict(mod2,newdata = df_test)
 
 results=df_test %>% select(precio_euros,predicciones)%>%mutate(precio_predic=exp(predicciones),
                                           delta_precio=round(precio_euros-exp(predicciones),2))
@@ -515,11 +620,13 @@ den=sum((df_test$precio_euros-y_prom)**2)
 1-(num/den)
 
 
-summary(mod1)
+summary(mod2)
 ```
-NO LOGRAMOS QUE EL SUPUESTO DE HOMOSCEDASTICIDAD SE CUMPLIERA
 
-ACÁ IRÍA LAS PREDICCIONES Y LAS INTERPRETACIONES DEL MODELO
+
+
+
+
 
 # Conclusiones
 
