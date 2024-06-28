@@ -269,7 +269,6 @@ resumen_df2 <- as.data.frame.matrix(summary(df_table2))
 
 #resumen_df[,-2] %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion,precio_euros,Wifi,Air_conditioning)
 
-
 #knitr::kable(resumen_df) %>% print()
 # Crear una tabla bonita con kable
 kable(resumen_df2, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
@@ -324,12 +323,7 @@ A partir de las diferentes combinaciones de las variables explicativas se puede 
 
 ```{r }
   
-# Definimos la primer versión del modelo
-
 mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_final)
-
-Anova(mod0)
-summary(mod0)
 
 ```
 
@@ -373,8 +367,6 @@ vifvalues=vifvalues%>%arrange(valor)
 kable(vifvalues, format = "latex", booktabs = TRUE,col.names = "Valor VIF") %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
 
-#RESOLVER: PONER EN TABLA PARA EL INFORME
-
 ```
 
 Se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 1711.793, es decir, existían problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
@@ -397,24 +389,10 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
 
+
 ```
 
 Luego se siguió con el supuesto de linealidad, donde se realizó el grafico entre residuos y predichos. En dicho gráfico se puede observar que no existe ningun patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad. Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
-
-
-```{r eval=FALSE,echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
-
-#PUNTO 6 TALLER
-#distritos + tipo_habitacion+personas+ banios+ habitaciones+camas+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Pool+Patio_or_balcony+check_in_24_hs+Smart_lock
-
-#RESOLVER: PREGUNTARLE AL PROFE
-#QUE SIGNIFICAN ESTOS GRÁFICOS? ES PARA EL SUPUESTO DE LINEALIDAD? ES NECESARIO HACERLOS???
-crPlot(mod0,"distritos")
-crPlot(mod0,"tipo_habitacion")
-crPlot(mod0,"grupo_habitacion")
-crPlot(mod0,"estancia_min")
-
-```
 
 
 ### Homoscedasticidad
@@ -434,11 +412,9 @@ kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
 
 ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank()) 
 
-#RESOLVER: VER SI SE PUEDE AGREGAR CAMPANA.
-
 ```
 
-```{r}
+```{r fig.cap="QQ-Plot de los Residuos Studentizados",results='asis', fig.align='center'}
 
 ggplot(data = df_final, aes(sample = res_ext)) +
   stat_qq_band(fill = 2) +
@@ -451,9 +427,12 @@ ggplot(data = df_final, aes(sample = res_ext)) +
 ```
 
 
-```{r}
+```{r results='asis',tab.cap="Resultados de la prueba de BREUSCH-PAGAN",echo=FALSE,warning=FALSE,message=FALSE}
 
-ks.test(df_final$residuos_int, 'pnorm')
+bp=data.frame(ks.test(df_final$residuos_int, 'pnorm')$p.value)
+kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE,col.names = "P-Valor") %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+
 
 ```
 Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica (hay que resaltar que la forma del histograma está muy influenciada por el tamaño de los bins), en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov. En esta prueba se obtuvo un p-valor muy chico el cual llevó a que se rechace H0, esto concluyó que el supuesto de normalidad no se cumplió. 
@@ -494,38 +473,36 @@ id_atipico = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
 ## Correción del modelo
 
-A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados. Se comenzó eliminando los datos atípicos y creando un nuevo modelo sin tomarlos en cuenta.
+A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados. Se comenzó eliminando los datos atípicos y creando un nuevo modelo sin tomarlos en cuenta. Este procedimiento se repitió hasta obtener un modelo que se ajuste más a los objetivos iniciales.
 
-```{r}
+
+```{r echo=TRUE,warning=FALSE,message=FALSE}
+
 df_2=df_final[-id_atipico,]
-
 
 mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
 
-#para "vichar"
 Anova(mod1)
-summary(mod1)
-
 #distritos(Gracia)              0.1495579
 #exp(0.1495579)=1.161834
 
 #"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
 
 #RESOLVER: PONER EN TABLA
-summary(mod0)$sigma
-summary(mod1)$sigma
-
-summary(mod0)$r.squared
-summary(mod1)$r.squared
-
-
-##  UNA VEZ DEFINIDO EL MODELO, PODEMOS HACER UN SPLIT DE DATOS 70/30 PARA ENTRENAR Y TESTEAR.
-
-# p-valor de grupo_habitación alto, ¿está relacionado con el grupo de referencia? ¿Habrá que sacar la variable?
-
-
 
 ```
+
+```{r results='asis',tab.cap="Métricas asociadas al Modelo",echo=FALSE,warning=FALSE,message=FALSE}
+tab=data.frame( Varianza_Mod0=summary(mod0)$sigma,
+                Varianza_Mod1=summary(mod1)$sigma,
+                R2_Mod0=summary(mod0)$r.squared,
+                R2_Mod1=summary(mod1)$r.squared)
+
+kable(tab, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+
+```
+
 
 ```{r}
 h_i <- influence(mod1)$hat
@@ -546,13 +523,13 @@ ggplot(df_cook, aes(x = i, y = D_i)) +
 
 id_atipico_2 = df_cook %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
-df_2[-id_atipico_2,]
+#df_2[-id_atipico_2,]
 
 ```
 
 ```{r}
-df_3=df_2[-id_atipico_2,]
 
+df_3=df_2[-id_atipico_2,]
 
 mod2 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_3)
 
@@ -565,39 +542,90 @@ summary(mod2)
 
 #"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
 
-#RESOLVER: PONER EN TABLA
-summary(mod0)$sigma
-summary(mod1)$sigma
-summary(mod2)$sigma
-
-summary(mod0)$r.squared
-summary(mod1)$r.squared
-summary(mod2)$r.squared
 ```
 
-
 ```{r}
-h_i <- influence(mod2)$hat
-D_i <- cooks.distance(mod2)
 
-df_cook_2 <- data.frame(i = 1:nrow(df_3),
-                 h_i = h_i,
-                 D_i = D_i)
+tab=data.frame( Varianza_Mod0=summary(mod0)$sigma,
+                Varianza_Mod1=summary(mod1)$sigma,
+                Varianza_Mod2=summary(mod2)$sigma,
+                R2_Mod0=summary(mod0)$r.squared,
+                R2_Mod1=summary(mod1)$r.squared,
+                R2_Mod2=summary(mod2)$r.squared)
+
+kable(tab, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+
+```
+
+Se compararon los resultados de los tres modelos definidos y se observó que las pruebas tuvieron resultados similares en todos los casos. A su vez, a medida que se fueron aplicando las correcciones la varianza fue disminuyendo modelo a modelo mientras que el $R^2$ fue aumentando.
+
+Una vez obtenidos los resultados deseados, dentro de un margen aceptable, se decidió no seguir iterando las pruebas y tomar como modelo final el número 2 ("mod2").
 
 
-ggplot(df_cook_2, aes(x = i, y = D_i)) +
-  geom_point() +
-  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
-  xlab('') +
-  ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed') +theme_bw()
 
-#no seguir
+```{r echo=FALSE,eval=FALSE}
+res_ext<-rstudent(mod2) #residuos
+res_int<-rstandard(mod2) #residuos
+yhat<-fitted(mod2) #ygorro
+#grafico
+
+df_3$predichos <- yhat #agrego los residuos a la tabla
+df_3$residuos <- res_ext #agrego los ygorro a la tabla
+df_3$residuos_int <- res_int #agrego los ygorro a la tabla
+
+ggplot(df_3, aes(x = predichos , y = residuos)) +
+  geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
+
+breusch_pagan(mod2)
+
+ggplot() + geom_histogram(aes(x=rstudent(mod2)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank())
+
+vif(mod2)
+
 
 ```
 
 
 # Resultados
+
+A nivel global, se observó que el p-valor de la prueba F es $<0.001$ lo que indica que el modelo es significativo a todo nivel de significación. Además la proporcion de la variabilidad de "Log(Precio_Euros)" explicada por las variables explicativas es de un 61,07%. 
+
+Posteriormente, analizando cada una de las variables, se observó que todas las seleccionadas son significativas para el modelo a un nivel de 5%, aunque si el nivel fuera al 1%, la variable "Patio_or_balcony" ya no lo sería.
+
+Interpretando algunos de los coeficientes personas puntuacion
+
+#distritos(Gracia)              0.1495579
+#exp(0.1495579)=1.161834
+
+#"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
+
+distritosGracia             -0.1428684  0.0205607  -6.949 3.95e-12 ***
+distritosHorta              -0.2495083  0.0309839  -8.053 9.13e-16 ***
+distritosL'Eixample         -0.0319350  0.0147119  -2.171 0.029981 *  
+distritosLes Corts          -0.2088467  0.0383750  -5.442 5.40e-08 ***
+distritosNou Barris         -0.2032104  0.0218850  -9.285  < 2e-16 ***
+distritosSant Andreau       -0.3778264  0.0418906  -9.019  < 2e-16 ***
+distritosSant Martí         -0.1098822  0.0251559  -4.368 1.27e-05 ***
+distritosSants-Montjuic     -0.1996524  0.0182161 -10.960  < 2e-16 ***
+distritosSarriá             -0.0331958  0.0299949  -1.107 0.268447    
+tipo_habitacionPrivate room -0.5501264  0.0172399 -31.910  < 2e-16 ***
+tipo_habitacionShared room  -1.1448646  0.0923910 -12.392  < 2e-16 ***
+personas                     0.1205344  0.0041590  28.981  < 2e-16 ***
+grupo_baniosPocos           -0.1485515  0.0387097  -3.838 0.000125 ***
+grupo_habitacionGrande       0.0569183  0.0180285   3.157 0.001599 ** 
+estancia_min                -0.0125994  0.0004734 -26.614  < 2e-16 ***
+puntuacion                   0.0023316  0.0005351   4.357 1.33e-05 ***
+TV1                          0.0977819  0.0218924   4.466 8.05e-06 ***
+Wifi1                       -0.1086236  0.0221644  -4.901 9.71e-07 ***
+Air_conditioning1            0.1580737  0.0128916  12.262  < 2e-16 ***
+Elevator1                    0.0413311  0.0112736   3.666 0.000248 ***
+Breakfast1                   0.0907214  0.0218366   4.155 3.29e-05 ***
+Pets_allowed1                0.0439681  0.0161156   2.728 0.006379 ** 
+Patio_or_balcony1            0.0301949  0.0117814   2.563 0.010395 *  
+check_in_24_hs1              0.1142929  0.0157051   7.277 3.69e-13 ***
+
+
 
 NO LOGRAMOS QUE EL SUPUESTO DE HOMOSCEDASTICIDAD SE CUMPLIERA
 
