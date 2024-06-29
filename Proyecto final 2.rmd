@@ -275,9 +275,7 @@ kable(resumen_df2, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
 Como parte de la estadística descriptiva se crearon gráficos donde se relacionan algunas de las variables explicativas con la variable de respuesta (precio en euros). Estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
 
 
-
-
-```{r message=FALSE,warning=FALSE,echo=FALSE,fig.cap="Histograma de la variable de respuesta precio_euros",results='asis', fig.align='center'}
+```{r message=FALSE,warning=FALSE,echo=FALSE,fig.cap="Histograma de la variable de respuesta precio euros",results='asis', fig.align='center'}
 
 h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + theme (axis.title.y = element_blank()) + labs(x="Precio (en Euros)")
 # Se "normalizan" más los datos con Log(Precio_euros)
@@ -334,21 +332,21 @@ Luego de la limpieza de datos y estadística descriptiva se comenzó la etapa de
 
 Entre estos supuestos se encuentran:
 
-- Multicolinealidad: En esta prueba se busca que ninguna de las columnas de la matriz $X$ sea "casi" combinación lineal de las demás. Cuando esto sucede, el número de condición aumenta, lo que lleva finalmente a que la inversa de $X'X$ sea inestable. Esta inestabilidad es la que finalmente se busca evitar.
+Multicolinealidad: En esta prueba se busca que ninguna de las columnas de la matriz X sea "casi" combinación lineal de las demás. Cuando esto sucede, el número de condición aumenta, lo que lleva finalmente a que la inversa de X'X sea inestable. Esta inestabilidad es la que finalmente se busca evitar.
 
-- Linealidad: Este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas. Si en el modelo no hay linealidad, se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los $\hat{Y}$ y $\hat{\epsilon}$, en el cual se busca no encontrar patrones.
+Linealidad: Este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas. Si en el modelo no hay linealidad, se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los Y Predichos y Epsilon-Residuos, en el cual se busca no encontrar patrones.
 
-- Homoscedasticidad: Se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante. Esto se interpreta como que la varianza no depende de ninguna de las variables explicativas. 
+Homoscedasticidad: Se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante. Esto se interpreta como que la varianza no depende de ninguna de las variables explicativas. 
 Esta prueba se suele ver mediante gráficos que relacionan cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde se busca no rechazar la hipótesis nula. 
 
-- Normalidad: Se refiere a que los residuos deben tener una distribución normal. Este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo, en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones.
+Normalidad: Se refiere a que los residuos deben tener una distribución normal. Este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo, en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones.
 
 En las siguientes lineas del script se pusieron a prueba cada uno de los supuestos antes mencionados.
 
 
 ### Multicolinealidad
 
-Se comenzó evaluando el supuesto de multicolinealidad. Para esto se calculó el número de condición, el cual dió $1711,793$, es decir, existían problemas de multicolinealidad. 
+Se comenzó evaluando el supuesto de multicolinealidad. Para esto se calculó el número de condición, el cual dió 1711,793, es decir, existían problemas de multicolinealidad. 
 
 Luego se calculó el VIF para cada una de las variables explicativas donde todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. 
 De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga tanta relevancia. 
@@ -376,11 +374,13 @@ kable(vifvalues, format = "latex", booktabs = TRUE,col.names = "Valor VIF") %>%
 
 ```
 
+
 \newpage
+
 
 ### Linealidad 
 
-```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis' }
+```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis'}
 
 res_ext<-rstudent(mod0) #residuos
 res_int<-rstandard(mod0) #residuos
@@ -425,7 +425,7 @@ Para definir el cumpliento o no del supuesto se realizó la prueba de Kolmogorov
 Sin embargo, obtener el cumplimiento de este supuesto no fue de mucha importancia para este modelo debido a la robustez que proporciona el Teorema Central del Límite cuando se trabaja con muchas observaciones.
 
 
-```{r fig.cap="Histograma de los Residuos Studentizados",results='asis', fig.align='center',echo=FALSE,message=FALSE,warning=FALSE,results='asis'}
+```{r fig.cap="Histograma de los Residuos Studentizados",results='asis',fig.align='center',echo=FALSE,message=FALSE,warning=FALSE}
 
 ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank()) 
 
@@ -448,6 +448,7 @@ ggplot(data = df_final, aes(sample = res_ext)) +
 
 bp=data.frame(p.valor=ks.test(df_final$residuos_int, 'pnorm')$p.value)
 bp=bp %>% mutate(p.valor="<0,001")
+
 
 kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE,col.names = "P-Valor") %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
@@ -495,16 +496,23 @@ df_2=df_final[-id_atipico,]
 
 ```{r echo=TRUE,warning=FALSE,message=FALSE}
 
-mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
+mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+
+             grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+
+             Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
 
 Anova(mod1)
 ```
 
 De la salida de Anova, se observó que todas las seleccionadas hasta esta instancia son significativas para el modelo a un nivel de 5%, por lo que se decidió no realizar cambios con respecto a ellas.
 
-
-
 ```{r echo=FALSE,message=FALSE,warning=FALSE}
+
+h_i <- influence(mod1)$hat
+D_i <- cooks.distance(mod1)
+
+df_cook <- data.frame(i = 1:nrow(df_2),
+                 h_i = h_i,
+                 D_i = D_i)
 
 id_atipico_2 = df_cook %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 df_3=df_2[-id_atipico_2,]
