@@ -498,7 +498,7 @@ Anova(mod1)
 
 De la salida de Anova, se observó que todas las seleccionadas hasta esta instancia son significativas para el modelo a un nivel de 5%, por lo que se decidió no realizar cambios con respecto a ellas.
 
-A continuación del estudio del anova, se volvieron a realizar las pruebas de diagnóstico con el nuevo modelo. No se obtuvieron resultados muy diferentes a los que ya se tenían, excepto de la última prueba, donde se calculó nuevamente la distancia de cook y se encontraron nuevas observaciones atípicas que fueron eliminadas obteniendo así un nuevo modelo, mod2. Esta última prueba se verá en el siguiente script.
+A continuación del estudio del anova, se volvieron a realizar las pruebas de diagnóstico con el nuevo modelo. No se obtuvieron resultados muy diferentes a los que ya se tenían, excepto de la última prueba, donde se calculó nuevamente la distancia de cook y se encontraron nuevas observaciones atípicas que fueron eliminadas obteniendo así un nuevo modelo, mod2. La siguiente salida corresponde al summary del modelo 2.
 
 ```{r echo=FALSE,message=FALSE,warning=FALSE}
 
