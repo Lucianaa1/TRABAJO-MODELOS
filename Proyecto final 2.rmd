@@ -241,17 +241,9 @@ df_test  = df[-train_indices, ]
 
 df_table=df %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion)
 
-
-# Convertir el resumen a data frame para mejor manejo
 resumen_df <- as.data.frame.matrix(summary(df_table))
 
 
-
-#resumen_df[,-2] %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion,precio_euros,Wifi,Air_conditioning)
-
-
-#knitr::kable(resumen_df) %>% print()
-# Crear una tabla bonita con kable
 kable(resumen_df, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
 ```
@@ -334,7 +326,7 @@ Entre estos supuestos se encuentran:
 
 Multicolinealidad: En esta prueba se busca que ninguna de las columnas de la matriz X sea "casi" combinación lineal de las demás. Cuando esto sucede, el número de condición aumenta, lo que lleva finalmente a que la inversa de X'X sea inestable. Esta inestabilidad es la que finalmente se busca evitar.
 
-Linealidad: Este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas. Si en el modelo no hay linealidad, se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los Y Predichos y Epsilon-Residuos, en el cual se busca no encontrar patrones.
+Linealidad: Este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas. Si en el modelo no hay linealidad, se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los $\hat{Y}$ y $\hat{\epsilon}$, en el cual se busca no encontrar patrones.
 
 Homoscedasticidad: Se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante. Esto se interpreta como que la varianza no depende de ninguna de las variables explicativas. 
 Esta prueba se suele ver mediante gráficos que relacionan cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde se busca no rechazar la hipótesis nula. 
@@ -343,6 +335,7 @@ Normalidad: Se refiere a que los residuos deben tener una distribución normal. 
 
 En las siguientes lineas del script se pusieron a prueba cada uno de los supuestos antes mencionados.
 
+\newpage
 
 ### Multicolinealidad
 
@@ -351,7 +344,7 @@ Se comenzó evaluando el supuesto de multicolinealidad. Para esto se calculó el
 Luego se calculó el VIF para cada una de las variables explicativas donde todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. 
 De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga tanta relevancia. 
 
-```{r echo=FALSE,results='asis',tab.cap="Valores de la prueb VIF"}
+```{r echo=FALSE, fig.align='center',results='asis',tab.cap="Valores de la prueb VIF"}
 library(car)
 
 X <- model.matrix(mod0)
@@ -375,12 +368,14 @@ kable(vifvalues, format = "latex", booktabs = TRUE,col.names = "Valor VIF") %>%
 ```
 
 
-\newpage
-
+\clearpage
 
 ### Linealidad 
 
-```{r echo=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos", results='asis'}
+Luego se siguió con el supuesto de linealidad, donde se realizó el gráfico entre residuos y predichos. En el mismo se puede observar que no existe ningún patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad.
+Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
+
+```{r message=FALSE,echo=FALSE, warning=FALSE,fig.cap="Gráfico de puntos de los residuos del modelo en función de los valores predichos",results='asis', fig.align='center'}
 
 res_ext<-rstudent(mod0) #residuos
 res_int<-rstandard(mod0) #residuos
@@ -394,12 +389,9 @@ df_final$residuos_int <- res_int #agrego los ygorro a la tabla
 ggplot(df_final, aes(x = predichos , y = residuos)) +
   geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
 
-
 ```
 
-Luego se siguió con el supuesto de linealidad, donde se realizó el gráfico entre residuos y predichos. En el mismo se puede observar que no existe ningún patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad.
-Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
-
+\newpage
 
 ### Homoscedasticidad
 
@@ -456,6 +448,7 @@ kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE,col.names = "P-Val
 
 ```
 
+\newpage
 
 ### Atípicos
 
@@ -542,6 +535,7 @@ Se compararon los resultados de los tres modelos definidos y se observó que las
 
 Una vez obtenidos los resultados deseados, dentro de un margen aceptable, se decidió no seguir iterando las pruebas y tomar como modelo final el número 2 ("mod2").
 
+\clearpage
 
 # Resultados
 
@@ -576,22 +570,27 @@ Finalmente para comprobar la efectividad real del modelo, se realizaron predicci
 df_test$predicciones = predict(mod2,newdata = df_test)
 
 results=df_test %>% select(precio_euros,predicciones)%>%mutate(precio_predic=exp(predicciones),
-                                          delta_precio=round(precio_euros-exp(predicciones),2)) %>% head(10)
+                                          delta_precio=round(precio_euros-exp(predicciones),2)) 
 
-kable(results, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
+tabla_results = results %>% head(10)
+
+kable(tabla_results, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
 ```
 
-```{r echo=FALSE,message=FALSE,warning=FALSE}
+Con estos valores, se calculó el $R^2$, obteniendo así casi un 40% de variabilidad del precio explicada por el modelo.
+
+```{r results='asis',tab.cap="$R^2$ calculado para los nuevos datos", message=FALSE,warning=FALSE,echo=FALSE, fig.align='center'}
 
 y_prom=mean(df_test$precio_euros)
 num=sum((results$delta_precio)**2)
 den=sum((df_test$precio_euros-y_prom)**2)
-1-(num/den)
-```
+res=round(1-(num/den),3)
 
-Con estos valores, se calculó el $R^2$, obteniendo así casi un 40% de variabilidad del precio explicada por el modelo.
+kable(res, format = "latex", booktabs = TRUE,row.names = FALSE,col.names = "Valor R Cuadrado") %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
 
 
 # Conclusiones
