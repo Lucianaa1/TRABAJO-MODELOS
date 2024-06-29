@@ -55,16 +55,13 @@ knitr::opts_chunk$set(echo = TRUE,fig.pos = 'H')
  
 # Introducción
 
-Airbnb es una compañía dedicada a la oferta de alojamientos de carácter vacacional en muchos de los países del mundo. Esta funciona a partir de un programa digital donde los anfitriones pueden publicar sus propiedades para que los clientes puedan verlas y elegir el alojamiento que más se adapte a sus necesidades. 
+Airbnb es una compañía dedicada a la oferta de alojamientos de carácter vacacional en muchos de los países del mundo que funciona a partir de un programa digital donde los anfitriones pueden publicar sus propiedades para que los clientes puedan verlas y elegir el alojamiento que más se adapte a sus necesidades. 
 
+En este proyecto se trabajó con algunas de las propiedades publidcadas en esta plataforma en la ciudad Barcelona, España. Inicialmente, la motivación del proyecto fue poder estimar el precio (en euros) de diferentes apartamentos según las características de cada uno. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de dicha ciudad. 
 
-En este proyecto se trabajó con algunas de las propiedades publidcadas en esta plataforma en la ciudad Barcelona, España. Inicialmente, nuestra motivación del proyecto fue poder estimar el precio (en euros) de diferentes apartamentos según las características de cada uno. Para realizar lo mencionado se trabajó con los datos de Airbnb Barcelona, donde se tenía el registro de más de 16.000 apartamentos de dicha ciudad. 
-
-La información con la que se contaba era buena pero excesiva, lo que llevó a que algunos datos fueran redundantes, por lo cual una parte importante de este proyecto fue la inicial, donde se realizó una limpieza de datos para así disponer de información que permita realizar una buena estimación e interpretación de los datos. 
+La información con la que se contaba era buena pero excesiva, lo que llevó a que algunos datos fueran redundantes, por lo cual una parte importante de este proyecto fue la limpieza de los datos para así disponer de información que permita realizar una buena estimación e interpretación. 
 
 Finalmente, el trabajo e interpretación de los datos, tanto sobre como actúan entre si y sus diversos efectos sobre la variable de interés fueron los que guiaron y generaron el interés en este proyecto provocando que el paso a paso sea tan importante como el resultado final.  
-
-  
 
 ```{r ,echo=FALSE,warning=FALSE,include=FALSE}
 library(here)
@@ -88,9 +85,9 @@ Habían variables cuantitativas pero la mayoría eran cualitativas, e incluso se
 
 La información de código postal y barrio se decidió resumirla en una variable llamada distrito la cual agrupó los 73 barrios de Barcelona en 10 distritos.  
 
-Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas variables que se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez más #importantes. 
+Se decidió prescindir de la latitud y longitud de cada apartamento como de algunas características que se encontraban dentro de la variable amenities, tomando en cuenta finalmente las diez que generalmente se consideran más relevantes. 
 
-Se definieron dos nuevas variables, "grupo_habitacion" y "grupo_banios", donde se agruparon la cantidad de habitaciones y baños respectivamente, para así disminuir la cantidad de categorías de cada variable.
+Se definieron dos nuevas variables, "grupo_habitacion" y "grupo_banios", donde se agruparon la cantidad de habitaciones y baños respectivamente, para así disminuir la cantidad de categorías de cada una.
 
 Del total de observaciones se operó con 12.848 debido a que las restantes contaban con datos faltantes. 
 
@@ -261,16 +258,10 @@ kable(resumen_df, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
 
 ```{r warning=FALSE, echo=FALSE,tab.cap="Descripción de las variables utilizadas en el informe",fig.align='center', results = 'asis'}
 
-df_table2=df %>% select(precio_euros,Wifi,Air_conditioning)
+df_table2=df %>% select(precio_euros,Wifi,Air_conditioning,personas,grupo_banios)
 
 resumen_df2 <- as.data.frame.matrix(summary(df_table2))
 
-
-
-#resumen_df[,-2] %>% select(distritos,tipo_habitacion,puntuacion,estancia_min,grupo_habitacion,puntuacion,precio_euros,Wifi,Air_conditioning)
-
-#knitr::kable(resumen_df) %>% print()
-# Crear una tabla bonita con kable
 kable(resumen_df2, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
 
@@ -281,9 +272,12 @@ kable(resumen_df2, format = "latex", booktabs = TRUE, row.names = FALSE) %>%
 
 # Análisis exploratorio
 
-Como parte de la estadística descriptiva se crearon gráficos donde se relacionan algunas de las variables explicativas con la variable de respuesta (precio en euros), estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
+Como parte de la estadística descriptiva se crearon gráficos donde se relacionan algunas de las variables explicativas con la variable de respuesta (precio en euros). Estos graficos permiten obtener interpretaciones de las diferentes relaciones, pero es muy importante destacar que las interpretaciones obtenidas son parciales, debido a que a diferencia del modelo, en cada uno de los gráficos se representa el efecto de una variable sin tomar en cuenta las demás.
 
-```{r message=FALSE,warning=FALSE,echo=FALSE,fig.cap="Histograma de la variable de respuesta Precio",results='asis', fig.align='center'}
+
+
+
+```{r message=FALSE,warning=FALSE,echo=FALSE,fig.cap="Histograma de la variable de respuesta precio_euros",results='asis', fig.align='center'}
 
 h1=df%>%ggplot()+geom_histogram(aes(x=precio_euros)) +theme_bw() + theme (axis.title.y = element_blank()) + labs(x="Precio (en Euros)")
 # Se "normalizan" más los datos con Log(Precio_euros)
@@ -293,6 +287,7 @@ h1/h2
 
 ```
 
+En la Figura 1 se puede observar la distribución de la variable precio y cómo se normaliza al aplicar la transformación de logaritmo.
 
 
 ```{r message=FALSE,echo=FALSE, warning=FALSE,fig.cap="Dispersión de Precio (en euros) por Distrito",results='asis', fig.align='center'}
@@ -301,16 +296,20 @@ ggplot(data=df_final) + geom_boxplot(aes(x=distritos,y=log(precio_euros),fill=di
 
 ```
 
-En el presente gráfico se puede observar la distribución de los datos y la relación entre los distritos y log(Precio). La mayoría de las cajas se encuentran superpuestas entre si, por lo que no se podría afirmar cual es el distrito que lleva a apartamentos con un log(Precio) más alto, pero si se pueden interpretar algunas diferencias entre los distritos, como que los apartamentos del distrito L'Eixample tienen un log(Precio) mayor que el distrito de Nou Barris. También se resalta la presencia de observaciones atípicas, que tienden a tener un log(Precio) más alto que las mayoría.
+En la Figura 2 se muestra la distribución del log(Precio) para cada uno de los Distritos. Se observa que la mayoría de las cajas se encuentran superpuestas entre si, por lo que no se podría afirmar cuál es el distrito que tiene apartamentos con un log(Precio) más alto, pero si se pueden interpretar algunas diferencias entre ellos, como que los apartamentos del distrito L'Eixample tienen un log(Precio) mayor que los que se encuentran en Sant Andreau.
+
+También se resalta la presencia de observaciones atípicas, que tienden a tener un log(Precio) más alto que las mayoría.
 
 
 ```{r message=FALSE,echo=FALSE, warning=FALSE,fig.cap="Dispersión de Precio (en euros) según la puntuación, por tipo de alojamiento",results='asis', fig.align='center'}
 
-ggplot(data=df_final,aes(x=puntuacion,y=log(precio_euros),col=tipo_habitacion)) + geom_point(size=1) + xlab("Puntuación")+ ylab('Log(Precio)')  +theme_bw() + geom_smooth(method = 'lm',se = FALSE)
+ggplot(data=df_final,aes(x=puntuacion,y=log(precio_euros),col=tipo_habitacion)) + geom_point(size=1)+
+labs(y="Log(Precio)",x="Puntuación",col="Tipo Habitación")+theme_bw() + geom_smooth(method = 'lm',se = FALSE)
 
 ```
 
-En el gráfico 3 se muestra a partir de un gráfico de dispersión la relación entre las diferentes combinaciones de las variables explicativas, puntuación y tipo de habitación, con la variable respuesta, log(Precio). Lo primero a destacar es que los puntos tienden a estar acumulados en la parte derecha del gráfico, teniendo en su mayoría una puntuación mayor a 60, por lo que permite interpretar que no existe ninguna relación entre puntuación y log(precio). Por otro lado también se puede observar que existe una relación muy marcada entre el tipo de habitación y la variable respuesta, los apartamentos enteros se encuentran en la parte derecha y superior del gráfico, es decir, que están relacionados con precios más altos, mientras que el resto se encuentran en el extremo inferior.
+En la figura 3 se muestra a partir de un gráfico de dispersión, la relación entre las diferentes combinaciones de las variables explicativas puntuación y tipo de habitación, con la variable respuesta, log(Precio). 
+Lo primero a destacar es que los puntos tienden a estar acumulados en la parte derecha del gráfico, teniendo en su mayoría una puntuación mayor a 60, por lo que permite interpretar que no existe ninguna relación entre puntuación y log(precio). Por otro lado también se puede observar que existe una relación muy marcada entre el tipo de habitación y la variable respuesta, dado que los apartamentos enteros se encuentran en la parte superior derecha del gráfico, es decir, que están relacionados con precios más altos, mientras que el resto se encuentran en el extremo inferior.
 
 \newpage
 
@@ -318,33 +317,41 @@ En el gráfico 3 se muestra a partir de un gráfico de dispersión la relación 
 
 ## Selección de variables
 
-A partir de las diferentes combinaciones de las variables explicativas se puede llegar a una gran cantidad de modelos que busquen predecir el precio, cada uno de estos llevará a una predicción diferente de el mismo. Uno de los problemas centrales es encontrar cual de todos estos modelos cumple mejor su objetivo. En este proyecto finalmente se decidió que 15 del total variables explicativas formaran parte del modelo incial.
+A partir de las diferentes combinaciones de las variables explicativas se puede llegar a una gran cantidad de modelos que busquen predecir el precio y cada uno de estos llevará a una predicción diferente del mismo. Uno de los problemas centrales es encontrar cuál de todos estos modelos cumple mejor su objetivo. En este proyecto finalmente se decidió trabajar con quince variables explicativas que formaron parte del modelo incial.
 
 
-```{r }
+```{r}
   
-mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_final)
+mod0 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+
+             grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+
+             Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_final)
 
 ```
 
 ## Diagnóstico
 
-Luego de la limpieza de datos y estadística descriptiva se comenzó la etapa de diagnótico, esta etapa es imprescindible debido a que el cumplimiento de todos los supuestos sobre el modelo es el que permite afirmar que las inferencias realizadas son validas.
+Luego de la limpieza de datos y estadística descriptiva se comenzó la etapa de diagnóstico,  etapa imprescindible debido a que el cumplimiento de todos los supuestos sobre el modelo es el que permite afirmar que las inferencias realizadas sean válidas.
+
 Entre estos supuestos se encuentran:
 
-Multicolinealidad: en está prueba se busca que ninguna de las columnas de la matriz X sea "casi" combinación lineal de las demás. Cuando esto si sucede el número de condición aumenta, lo que lleva finalmente a que la inversa de X'X sea inestable. Esta inestabilidad es la que finalmente se busca evitar.
+- Multicolinealidad: En esta prueba se busca que ninguna de las columnas de la matriz $X$ sea "casi" combinación lineal de las demás. Cuando esto sucede, el número de condición aumenta, lo que lleva finalmente a que la inversa de $X'X$ sea inestable. Esta inestabilidad es la que finalmente se busca evitar.
 
-Linealidad: este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas, si en el modelo no hay linealidad se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los Yˆ y εˆ, en el cual se busca no encontrar patrones.
+- Linealidad: Este supuesto se basa en la linealidad de la variable log(Precio) y cada una de las variables explicativas. Si en el modelo no hay linealidad, se presentarán problemas de correlación entre los residuos y variabilidad de los mismos. Para verificar el cumplimiento de este supuesto se realizó un análisis gráfico entre los $\hat{Y}$ y $\hat{\epsilon}$, en el cual se busca no encontrar patrones.
 
-Homoscedasticidad: se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante,se va a entender esto como que la varianza no depende de ninguna de las variables explicativas. Esta prueba se suele ver mediante gráficos que relacionan cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde se busca no rechazar la hipótesis nula. 
+- Homoscedasticidad: Se busca que el modelo sea homoscedastico, es decir, que la varianza de todos los residuos sea constante. Esto se interpreta como que la varianza no depende de ninguna de las variables explicativas. 
+Esta prueba se suele ver mediante gráficos que relacionan cada variable explicativa con la de respuesta y a partir de una prueba de hipótesis donde se busca no rechazar la hipótesis nula. 
 
-Normalidad: se refiere a que los residuos deben tener una distribución normal, este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones.
+- Normalidad: Se refiere a que los residuos deben tener una distribución normal. Este supuesto es muy importante debido a que es el que luego permite realizar inferencias. Sin embargo, en los modelos donde el tamaño de muestra es grande, como en este caso, la falta de normalidad de los residuos no generan repercusiones.
 
 En las siguientes lineas del script se pusieron a prueba cada uno de los supuestos antes mencionados.
 
 
-
 ### Multicolinealidad
+
+Se comenzó evaluando el supuesto de multicolinealidad. Para esto se calculó el número de condición, el cual dió $1711,793$, es decir, existían problemas de multicolinealidad. 
+
+Luego se calculó el VIF para cada una de las variables explicativas donde todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. 
+De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga tanta relevancia. 
 
 ```{r echo=FALSE,results='asis',tab.cap="Valores de la prueb VIF"}
 library(car)
@@ -369,8 +376,6 @@ kable(vifvalues, format = "latex", booktabs = TRUE,col.names = "Valor VIF") %>%
 
 ```
 
-Se comenzó evaluando el supuesto de multicolinealidad, para esto se calculó el número de condición, el cual dió 1711.793, es decir, existían problemas de multicolinealidad. Luego se calculó el VIF para cada una de las variables explicativas, todas tenían un VIF mayor a 1 pero menor a 5, por lo cual, no se pudo determinar cual es la variable que generó el problema del cumplimiento de este supuesto. De igual forma, esto no provocó grandes problemas debido a que se trabajó con un modelo con muchas variables cualitativas, lo cual hace que la evaluación de este supuesto no tenga mucho sentido. 
-
 \newpage
 
 ### Linealidad 
@@ -392,29 +397,41 @@ ggplot(df_final, aes(x = predichos , y = residuos)) +
 
 ```
 
-Luego se siguió con el supuesto de linealidad, donde se realizó el grafico entre residuos y predichos. En dicho gráfico se puede observar que no existe ningun patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad. Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
+Luego se siguió con el supuesto de linealidad, donde se realizó el gráfico entre residuos y predichos. En el mismo se puede observar que no existe ningún patrón, por lo cual se podría afirmar que se cumple el supuesto de linealidad.
+Esto se podría dar como una repercusión de la transformación logaritmica, debido a que esta permite solucionar casos donde la variable respuesta no presenta una relación lineal con una o más variables explicativas.
 
 
 ### Homoscedasticidad
 
 Como ya se mencionó, los dos primeros supuestos diagnosticados son importantes pero no tanto para un modelo como el presente, por lo cual se centró la atención en diagnosticar los supuestos restantes, como la homoscedasticidad, donde a partir del test de BREUSCH-PAGAN se pudo observar que en el modelo inicial no se cumplía este supuesto. El p-valor dió muy bajo, lo que provocó que se rechazara H0. 
 
-```{r results='asis',tab.cap="Resultados de la prueba de BREUSCH-PAGAN"}
+```{r results='asis',tab.cap="Resultados de la prueba de BREUSCH-PAGAN", message=FALSE,warning=FALSE,echo=FALSE, fig.align='center'}
 
 bp=data.frame(breusch_pagan(mod0))
+bp=bp %>% mutate(p.value="<0,001")
+
 kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
 ```
 
 ### Normalidad
 
-```{r fig.cap="Histograma de los Residuos Studentizados",results='asis', fig.align='center'}
+Para evaluar la normalidad, se realizó un histograma y un QQ-Plot de los residuos Studentizados.
+
+En el primer gráfico se pudo observar que tenía forma de una campana simétrica (hay que resaltar que la forma del histograma está muy influenciada por el tamaño de los bins), en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. 
+
+Para definir el cumpliento o no del supuesto se realizó la prueba de Kolmogorov-Smirnov. En esta prueba se obtuvo un p-valor muy chico el cual llevó a que se rechace H0 lo que concluyó que el supuesto de normalidad no se cumplió.
+
+Sin embargo, obtener el cumplimiento de este supuesto no fue de mucha importancia para este modelo debido a la robustez que proporciona el Teorema Central del Límite cuando se trabaja con muchas observaciones.
+
+
+```{r fig.cap="Histograma de los Residuos Studentizados",results='asis', fig.align='center',echo=FALSE,message=FALSE,warning=FALSE,results='asis'}
 
 ggplot() + geom_histogram(aes(x=rstudent(mod0)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank()) 
 
 ```
 
-```{r fig.cap="QQ-Plot de los Residuos Studentizados",results='asis', fig.align='center'}
+```{r fig.cap="QQ-Plot de los Residuos Studentizados",results='asis', fig.align='center',echo=FALSE,warning=FALSE,message=FALSE}
 
 ggplot(data = df_final, aes(sample = res_ext)) +
   stat_qq_band(fill = 2) +
@@ -429,21 +446,23 @@ ggplot(data = df_final, aes(sample = res_ext)) +
 
 ```{r results='asis',tab.cap="Resultados de la prueba de BREUSCH-PAGAN",echo=FALSE,warning=FALSE,message=FALSE}
 
-bp=data.frame(ks.test(df_final$residuos_int, 'pnorm')$p.value)
+bp=data.frame(p.valor=ks.test(df_final$residuos_int, 'pnorm')$p.value)
+bp=bp %>% mutate(p.valor="<0,001")
+
 kable(bp, format = "latex", booktabs = TRUE,row.names = FALSE,col.names = "P-Valor") %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
 
 
 ```
-Otro supuesto importante es el de la normalidad, para evaluarlo se realizó un histograma y un QQ-Plot, en el primer gráfico se pudo observar que tenía forma de una campana simétrica (hay que resaltar que la forma del histograma está muy influenciada por el tamaño de los bins), en cambio en el segundo gráfico los puntos se encontraban fuera de la banda, es decir, el primer gráfico dio indicios de que si se cumplia el supuesto de normalidad pero el segundo mostraba que no. Para definir el cumpliento o no del supuesto se realizó la Prueba de Kolmogorov-Smirnov. En esta prueba se obtuvo un p-valor muy chico el cual llevó a que se rechace H0, esto concluyó que el supuesto de normalidad no se cumplió. 
-Sin embargo, obtener el cumplimiento de este supuesto no fue de mucha importancia debido a la robustez que proporciona el Teorema Central del Límite cuando se trabaja con muchas observaciones.
 
 
 ### Atípicos
 
-Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones, como en el modelo las observaciones eran muchas esta linea roja quedaba muy baja, haciendo referencia a que todas las osbervaciones eran atípicas, para poder interpretar mejor esto se decidió que la linea esté en el nivel de 4/500, en ese punto las observaciones atípicas terminan siendo las más diferentes.
+Por último se realizó el gráfico de la Distancia de Cook para observar si habían observaciones atípicas. 
 
-```{r, echo=FALSE}
+Usualmente en este gráfico se hace la línea roja horizontal al nivel de 4/n, donde n es el número de observaciones. Como en el modelo las observaciones eran muchas, esta linea roja quedaba muy baja, haciendo referencia a que todas las observaciones eran atípicas. Para poder aplicar esto en el modelo, se decidió que la linea esté en el nivel de 4/500, en ese punto las observaciones atípicas terminan siendo las más diferentes.
+
+```{r fig.cap="Gráfico de Distancia de Cook por observación del modelo 0",results='asis', fig.align='center',echo=FALSE,message=FALSE,warning=FALSE}
 
 h_i <- influence(mod0)$hat
 D_i <- cooks.distance(mod0)
@@ -462,96 +481,49 @@ ggplot(df, aes(x = i, y = D_i)) +
 
 ```
 
-
-
-```{r, echo=FALSE}
-
-id_atipico = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
-
-```
-
-
 ## Correción del modelo
 
 A continuación se verán algunos de los cambios realizados en el modelo con respecto al cumplimiento de los principales supuestos junto con los nuevos resultados. Se comenzó eliminando los datos atípicos y creando un nuevo modelo sin tomarlos en cuenta. Este procedimiento se repitió hasta obtener un modelo que se ajuste más a los objetivos iniciales.
 
 
-```{r echo=TRUE,warning=FALSE,message=FALSE}
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+id_atipico = df %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
 
 df_2=df_final[-id_atipico,]
+```
+
+
+```{r echo=TRUE,warning=FALSE,message=FALSE}
 
 mod1 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_2)
 
 Anova(mod1)
-#distritos(Gracia)              0.1495579
-#exp(0.1495579)=1.161834
-
-#"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
-
-#RESOLVER: PONER EN TABLA
-
 ```
 
-```{r results='asis',tab.cap="Métricas asociadas al Modelo",echo=FALSE,warning=FALSE,message=FALSE}
-tab=data.frame( Varianza_Mod0=summary(mod0)$sigma,
-                Varianza_Mod1=summary(mod1)$sigma,
-                R2_Mod0=summary(mod0)$r.squared,
-                R2_Mod1=summary(mod1)$r.squared)
-
-kable(tab, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
-  kable_styling(latex_options = c("striped", "hold_position")) 
-
-```
+De la salida de Anova, se observó que todas las seleccionadas hasta esta instancia son significativas para el modelo a un nivel de 5%, por lo que se decidió no realizar cambios con respecto a ellas.
 
 
-```{r}
-h_i <- influence(mod1)$hat
-D_i <- cooks.distance(mod1)
 
-df_cook <- data.frame(i = 1:nrow(df_2),
-                 h_i = h_i,
-                 D_i = D_i)
-
-
-ggplot(df_cook, aes(x = i, y = D_i)) +
-  geom_point() +
-  geom_segment(aes(x = i, xend = i, y = 0, yend = D_i)) +
-  xlab('') +
-  ylab(expression(D[i])) +
-  geom_abline(slope = 0, intercept = 4/500, col = 2, linetype = 'dashed') +theme_bw()
-
+```{r echo=FALSE,message=FALSE,warning=FALSE}
 
 id_atipico_2 = df_cook %>% filter(D_i>(4/500))%>% arrange(desc(D_i)) %>% pull(i)
-
-#df_2[-id_atipico_2,]
-
-```
-
-```{r}
-
 df_3=df_2[-id_atipico_2,]
 
-mod2 <- lm(log(precio_euros) ~  distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_3)
+mod2 <- lm(log(precio_euros) ~distritos + tipo_habitacion+personas+ grupo_banios+ grupo_habitacion+estancia_min+puntuacion+TV+Wifi+Air_conditioning+Elevator+Breakfast+Pets_allowed+Patio_or_balcony+check_in_24_hs, data=df_3)
 
-#para "vichar"
-Anova(mod2)
 summary(mod2)
-
-#distritos(Gracia)              0.1495579
-#exp(0.1495579)=1.161834
-
-#"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
 
 ```
 
-```{r}
+```{r tab.cap="Tabla comparativa de métricas de los modelos definidos",results='asis', fig.align='center',echo=FALSE,message=FALSE,warning=FALSE}
 
-tab=data.frame( Varianza_Mod0=summary(mod0)$sigma,
-                Varianza_Mod1=summary(mod1)$sigma,
-                Varianza_Mod2=summary(mod2)$sigma,
-                R2_Mod0=summary(mod0)$r.squared,
-                R2_Mod1=summary(mod1)$r.squared,
-                R2_Mod2=summary(mod2)$r.squared)
+tab=data.frame( Varianza_Mod0=round(summary(mod0)$sigma,3),
+                Varianza_Mod1=round(summary(mod1)$sigma,3),
+                Varianza_Mod2=round(summary(mod2)$sigma,3),
+                R2_Mod0=round(summary(mod0)$r.squared,3),
+                R2_Mod1=round(summary(mod1)$r.squared,3),
+                R2_Mod2=round(summary(mod2)$r.squared,3)
+                )
 
 kable(tab, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
@@ -563,106 +535,63 @@ Se compararon los resultados de los tres modelos definidos y se observó que las
 Una vez obtenidos los resultados deseados, dentro de un margen aceptable, se decidió no seguir iterando las pruebas y tomar como modelo final el número 2 ("mod2").
 
 
+# Resultados
 
-```{r echo=FALSE,eval=FALSE}
-res_ext<-rstudent(mod2) #residuos
-res_int<-rstandard(mod2) #residuos
-yhat<-fitted(mod2) #ygorro
-#grafico
+A nivel global, se observó que el p-valor de la prueba F es $<0,001$ lo que indica que el modelo es significativo a todo nivel de significación. Además la proporcion de la variabilidad de "Log(Precio_Euros)" explicada por las variables explicativas es de un 61,07%. 
 
-df_3$predichos <- yhat #agrego los residuos a la tabla
-df_3$residuos <- res_ext #agrego los ygorro a la tabla
-df_3$residuos_int <- res_int #agrego los ygorro a la tabla
+Posteriormente, analizando cada una de las variables, se observó que todas las seleccionadas son significativas para el modelo a un nivel de 5%, aunque si el nivel fuera al 1%, la variable "Patio_or_balcony" ya no lo sería.
 
-ggplot(df_3, aes(x = predichos , y = residuos)) +
-  geom_point(size=1) +  geom_hline(yintercept = 0) + labs(y="Residuos",x="Predichos") +theme_bw() 
+Dado que el objetivo es poder explicar el precio en euros, para la interpretación de los coeficientes, previamente se deshizo el cambio de variable aplicado, permitiendo obtener las siguientes conclusiones.
 
-breusch_pagan(mod2)
+```{r tab.cap="Tabla de coeficientes del modelo 2",results='asis', fig.align='center',echo=FALSE,message=FALSE,warning=FALSE}
 
-ggplot() + geom_histogram(aes(x=rstudent(mod2)),bins = 100) + xlab("Residuos Studentizados")+  theme_bw() + theme (axis.title.y = element_blank())
+tab_1=data.frame(Coeficientes=round(mod2$coefficients,3),
+          Exp_Coef=round(exp(mod2$coefficients),3),
+          Porcentaje=(round(exp(mod2$coefficients),3)-1)*100)
 
-vif(mod2)
-
+kable(tab_1, format = "latex", booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
 
 ```
 
 
-# Resultados
+Observando por ejemplo el distrito de Gracia, se interpreta que es un 13,3% más barato que el distrito de referencia ("Ciutat Vella"), dejando todas las demás variables constantes. Para el resto de los distritos, la interpretación es análoga.
 
-A nivel global, se observó que el p-valor de la prueba F es $<0.001$ lo que indica que el modelo es significativo a todo nivel de significación. Además la proporcion de la variabilidad de "Log(Precio_Euros)" explicada por las variables explicativas es de un 61,07%. 
+Si se mira el coeficiente de la variable "Estancia_min" se puede concluir que por cada día que aumente la estancia mínima, se espera que el precio decrezca un 1,3%. Lo mismo sucede para la variable "Puntuación", donde por cada punto que aumente la puntuación, se espera que el precio aumente un 0,2%
 
-Posteriormente, analizando cada una de las variables, se observó que todas las seleccionadas son significativas para el modelo a un nivel de 5%, aunque si el nivel fuera al 1%, la variable "Patio_or_balcony" ya no lo sería.
+En ambos casos, siempre se deja todas las demás variables constantes.
 
-Interpretando algunos de los coeficientes personas puntuacion
+Finalmente para comprobar la efectividad real del modelo, se realizaron predicciones con datos nuevos. 
 
-#distritos(Gracia)              0.1495579
-#exp(0.1495579)=1.161834
-
-#"Gracia es 16% más caro que el grupo de referencia DEJANDO TODO DEMAS CONSTANTE" TOMAR SOLO ALGUNAS VARIABLES.
-
-distritosGracia             -0.1428684  0.0205607  -6.949 3.95e-12 ***
-distritosHorta              -0.2495083  0.0309839  -8.053 9.13e-16 ***
-distritosL'Eixample         -0.0319350  0.0147119  -2.171 0.029981 *  
-distritosLes Corts          -0.2088467  0.0383750  -5.442 5.40e-08 ***
-distritosNou Barris         -0.2032104  0.0218850  -9.285  < 2e-16 ***
-distritosSant Andreau       -0.3778264  0.0418906  -9.019  < 2e-16 ***
-distritosSant Martí         -0.1098822  0.0251559  -4.368 1.27e-05 ***
-distritosSants-Montjuic     -0.1996524  0.0182161 -10.960  < 2e-16 ***
-distritosSarriá             -0.0331958  0.0299949  -1.107 0.268447    
-tipo_habitacionPrivate room -0.5501264  0.0172399 -31.910  < 2e-16 ***
-tipo_habitacionShared room  -1.1448646  0.0923910 -12.392  < 2e-16 ***
-personas                     0.1205344  0.0041590  28.981  < 2e-16 ***
-grupo_baniosPocos           -0.1485515  0.0387097  -3.838 0.000125 ***
-grupo_habitacionGrande       0.0569183  0.0180285   3.157 0.001599 ** 
-estancia_min                -0.0125994  0.0004734 -26.614  < 2e-16 ***
-puntuacion                   0.0023316  0.0005351   4.357 1.33e-05 ***
-TV1                          0.0977819  0.0218924   4.466 8.05e-06 ***
-Wifi1                       -0.1086236  0.0221644  -4.901 9.71e-07 ***
-Air_conditioning1            0.1580737  0.0128916  12.262  < 2e-16 ***
-Elevator1                    0.0413311  0.0112736   3.666 0.000248 ***
-Breakfast1                   0.0907214  0.0218366   4.155 3.29e-05 ***
-Pets_allowed1                0.0439681  0.0161156   2.728 0.006379 ** 
-Patio_or_balcony1            0.0301949  0.0117814   2.563 0.010395 *  
-check_in_24_hs1              0.1142929  0.0157051   7.277 3.69e-13 ***
-
-
-
-NO LOGRAMOS QUE EL SUPUESTO DE HOMOSCEDASTICIDAD SE CUMPLIERA
-
-ACÁ IRÍA LAS PREDICCIONES Y LAS INTERPRETACIONES DEL MODELO
-
-```{r}
+```{r tab.cap="Tabla predicciones de las primeras 10 observaciones",results='asis', fig.align='center',echo=FALSE,message=FALSE,warning=FALSE}
 
 df_test$predicciones = predict(mod2,newdata = df_test)
 
 results=df_test %>% select(precio_euros,predicciones)%>%mutate(precio_predic=exp(predicciones),
-                                          delta_precio=round(precio_euros-exp(predicciones),2))
+                                          delta_precio=round(precio_euros-exp(predicciones),2)) %>% head(10)
 
-y_prom=mean(df_test$precio_euros)
+kable(results, format = "latex", booktabs = TRUE,row.names = FALSE) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
 
-
-num=sum((results$delta_precio)**2)
-
-den=sum((df_test$precio_euros-y_prom)**2)
-
-1-(num/den)
-
-
-summary(mod2)
 ```
 
+```{r echo=FALSE,message=FALSE,warning=FALSE}
 
+y_prom=mean(df_test$precio_euros)
+num=sum((results$delta_precio)**2)
+den=sum((df_test$precio_euros-y_prom)**2)
+1-(num/den)
+```
 
-
+Con estos valores, se calculó el $R^2$, obteniendo así casi un 40% de variabilidad del precio explicada por el modelo.
 
 
 # Conclusiones
 
-(((Luego de realizadas las predicciones, se logró concluir que el modelo es funcional según las pruebas realizadas aunque tal vez creemos que se podría seguir mejorando ya sea agregando nuevas variables que puedan ser relevantes y que no estén en los datos iniciales.)))
-
 Luego de realizadas las pruebas y predicciones se logró concluir que el modelo si es funcional y cumple con su objetivo, sin embargo, hay varios supuestos que no se cumplen lo cual lleva a pensar que es un modelo que todavía puede ser mejorado, ya sea agregando variables que sean relevantes que no estuvieran incluidas en los datos iniciales o trabajando de diferente forma con las presentes.
 
 “Todos los modelos son incorrectos, pero algunos son útiles” George Edward Pelham Box
+
 
 # Bibliografía
 
